@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #eee;
+  font-family: "Roboto", sans-serif;
+}
+
+.layout {
+  display: flex;
+  height: 100vh;
+  gap: 2rem;
+}
+
+.sidebar__wrapper {
+  position: relative;
+}
+
+.sidebar {
+  width: 17rem;
+  height: 100%;
+  background-color: #fff;
+  padding: 1rem;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sidebar__top {
+  width: max-content;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+.sidebar__logo {
+  width: 3.5rem;
+  height: 3rem;
+  object-fit: scale-down;
+}
+
+.sidebar__list {
+  list-style: none;
+}
+
+.sidebar__link {
+  display: inline-block;
+  font-size: 1rem;
+  text-decoration: none;
+  color: #000;
+  padding: 0.8rem 1rem;
+  display: flex;
+  background-color: #f3f4f6;
+  margin-bottom: 1rem;
+  border-radius: 0.8rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar__link.active {
+  background-color: #dd2e44; 
+  color: #fff;
+}
+
+.active-icon {
+  color: #fff; 
+}
+
+
+.sidebar__icon {
+  font-size: 1.2rem;
+  display: inline-block;
+}
+
+.sidebar__name {
+  margin-left: 0.5rem;
+}
+
+.sidebar__title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.sidebar__title strong {
+  color: red;
+}
+
+.btn__close {
+  position: absolute;
+  right: 0;
+  top: 4.25rem;
+  border: none;
+  background-color: #fff;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transform: translateX(50%);
+  font-size: 1.1rem;
+}
+
+.btn__open {
+  position: absolute;
+  right: 0;
+  top: 4.25rem;
+  border: none;
+  background-color: #fff;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transform: translateX(50%);
+  font-size: 1.1rem;
+}
+
+[data-collapse="true"] {
+  width: 5.3rem;
+}
+
+[data-collapse="true"] .sidebar__name, 
+[data-collapse="true"] .sidebar__title {
+  display: none;
+}

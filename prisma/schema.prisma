@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Historico {
+  id         Int       @id @default(autoincrement())
+  veiculo_id Int?
+  entrada    DateTime
+  saida      DateTime?
+  preco      Decimal?  
+  created_at DateTime  @default(now())
+  veiculo    Veiculos? @relation(fields: [veiculo_id], references: [id])
+}
+
+model Tarifas {
+  id            Int     @id @default(autoincrement())
+  valor_por_hora Decimal
+}
+
+model Veiculos {
+  id           Int         @id @default(autoincrement())
+  placa        String      @db.VarChar(10)
+  modelo       String      @db.VarChar(50)
+  cor          String      @db.VarChar(20)
+  proprietario String      @db.VarChar(100)
+  historico    Historico[]
+}
