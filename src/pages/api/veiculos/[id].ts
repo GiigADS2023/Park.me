@@ -1,6 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../prisma';
 
+async function deleteHistoricoByVeiculoId(veiculoId: number) {
+  // Deletar todos os registros do histórico onde o veiculo_id seja igual ao veiculoId
+  await prisma.historico.deleteMany({
+    where: { veiculo_id: veiculoId },
+  });
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
 
@@ -30,10 +37,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } else if (req.method === 'DELETE') {
     try {
+      // Deletar os históricos associados a este veículo
+      await deleteHistoricoByVeiculoId(Number(id));
+
+      // Deletar o veículo
       await prisma.veiculos.delete({
         where: { id: Number(id) },
       });
-      res.status(204).end();
+      res.status(204).end(); // Resposta 204 No Content
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Erro ao excluir veículo' });
