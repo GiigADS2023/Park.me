@@ -69,3 +69,109 @@
     cursor: pointer;
 }
   
+.modalContainer {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px; 
+    background-color: #fff;
+    border-radius: 10px;
+    width: 40%; 
+    max-width: 500px; 
+    height: auto;
+}
+
+.modal label {
+    font-size: 14px;
+    width: 100%;
+}
+
+.modal input {
+    width: 100%;
+    outline: none;
+    padding: 5px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
+
+.modal select, 
+.modal input[type="datetime-local"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+    background-color: #f5f5f5;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.modal select:focus, 
+.modal input[type="datetime-local"]:focus {
+    border-color: #dd2e44;
+}
+
+.buttonGroup {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    gap: 1rem; 
+    width: 100%;
+}
+
+.saveButton, .cancelButton {
+    flex: 1; 
+    max-width: 150px; 
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    color: #fff;
+}
+
+.saveButton {
+    background-color: #dd2e44;
+    margin-left: 9rem;
+}
+
+.cancelButton {
+    background-color: #63625f;
+    margin-left: 2rem;
+}
+
+.active {
+    display: flex;
+}
+
+.active .modal {
+    animation: modal .4s;
+}
+
+@keyframes .modal {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -60px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+}
