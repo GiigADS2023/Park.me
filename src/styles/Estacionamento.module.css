@@ -36,6 +36,7 @@
 .identifierContainer {
     text-align: right;
     margin-bottom: 16px;
+    margin-top: 10px;
 }
 
 .vehicleContainer {
@@ -46,6 +47,7 @@
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
+    font-size: 14px;
 }
 
 .start, .end {
