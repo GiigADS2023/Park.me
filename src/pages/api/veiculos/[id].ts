@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await prisma.veiculos.delete({
         where: { id: Number(id) },
       });
-      res.status(204).end(); // Resposta 204 No Content
+      res.status(204).end(); 
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Erro ao excluir veículo' });
