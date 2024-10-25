@@ -1,4 +1,3 @@
-/* Estacionamento.module.css */
 .div {
     margin: 0;
     padding: 0;
@@ -47,7 +46,7 @@
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
-    font-size: 16px;
+    font-size: 13.50px;
 }
 
 .start, .end {
@@ -133,31 +132,29 @@
 
 .buttonGroup {
     display: flex;
-    align-items: center;
     justify-content: center; 
     gap: 1rem; 
-    width: 100%;
+    width: 100%; 
 }
 
 .saveButton, .cancelButton {
-    flex: 1; 
-    max-width: 150px; 
+    flex: 1;
+    max-width: 150px;
     padding: 10px;
     border-radius: 5px;
     border: none;
     cursor: pointer;
     text-align: center;
-    color: #fff;
 }
 
 .saveButton {
-    background-color: #dd2e44;
-    margin-left: 9rem;
+    background-color: #dd2e44; 
+    color: #fff; 
 }
 
 .cancelButton {
-    background-color: #63625f;
-    margin-left: 2rem;
+    background-color: #63625f; 
+    color: #fff; 
 }
 
 .active {
@@ -177,4 +174,109 @@
       opacity: 1;
       transform: translate3d(0, 0, 0);
     }
+}
+
+.detailPanel {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.detailPanel h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #000;
+}
+
+.timeInfo span,
+.priceInfo span {
+    display: block;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+.modalContainer {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  width: 40%;
+  max-width: 500px;
+  height: auto;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.buttonOption {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.finalizeButton {
+  background-color: #dd2e44;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancelOption {
+  background-color: #757575;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.initializeButton {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+  text-align: center;
+}
+
+.infoBox {
+  border: 1px solid #ddd; 
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  background-color: #f9f9f9; 
 }

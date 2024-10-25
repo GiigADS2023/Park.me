@@ -9,7 +9,7 @@ interface Props {
 }
 
 const SidebarProvider = ({children}:Props) => {
-    const [isCollapsedSidebar, setIsCollapsedSidebar] = useState<boolean>(false);
+    const [isCollapsedSidebar, setIsCollapsedSidebar] = useState<boolean>(true);
 
     const toogleSidebarCollapseHandler = () => {
       setIsCollapsedSidebar(prev => !prev);
