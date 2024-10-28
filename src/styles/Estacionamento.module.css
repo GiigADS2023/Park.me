@@ -1,0 +1,282 @@
+.div {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.body {
+    width: 90vw;
+    height: 100vh;
+}
+
+.cardContainer {
+  background: #fff;
+  padding: 16px;
+  box-shadow: 6px 6px 10px rgba(156, 156, 156, 0.3);
+  cursor: pointer;
+}
+
+.cardContainer h2 {
+  color: #dd2e44;
+  margin-block-start: 0;
+  margin-block-end: -4px;
+  font-size: 1.7rem;
+  font-weight: bold;
+}
+
+.mainContainer {
+  padding: 20px;
+  display: grid;
+  grid-row-gap: 30px;
+  grid-column-gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}  
+
+.identifierContainer {
+    text-align: right;
+    margin-bottom: 16px;
+    margin-top: 10px;
+}
+
+.vehicleContainer {
+    margin-bottom: 16px;
+}
+
+.timesContainer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 13.50px;
+}
+
+.start, .end {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.end {
+    color: #dd2e44;
+}
+
+.addCard {
+    background: #F5F0F0;
+    border: 1px dotted #707070;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8rem;
+    color: #707070;
+    cursor: pointer;
+}
+  
+.modalContainer {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px; 
+    background-color: #fff;
+    border-radius: 10px;
+    width: 40%; 
+    max-width: 500px; 
+    height: auto;
+}
+
+.modal label {
+    font-size: 14px;
+    width: 100%;
+}
+
+.modal input {
+    width: 100%;
+    outline: none;
+    padding: 5px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
+
+.modal select, 
+.modal input[type="datetime-local"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+    background-color: #f5f5f5;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.modal select:focus, 
+.modal input[type="datetime-local"]:focus {
+    border-color: #dd2e44;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: center; 
+    gap: 1rem; 
+    width: 100%; 
+}
+
+.saveButton, .cancelButton {
+    flex: 1;
+    max-width: 150px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+.saveButton {
+    background-color: #dd2e44; 
+    color: #fff; 
+}
+
+.cancelButton {
+    background-color: #63625f; 
+    color: #fff; 
+}
+
+.active {
+    display: flex;
+}
+
+.active .modal {
+    animation: modal .4s;
+}
+
+@keyframes .modal {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -60px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+}
+
+.detailPanel {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.detailPanel h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #000;
+}
+
+.timeInfo span,
+.priceInfo span {
+    display: block;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+.modalContainer {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  width: 40%;
+  max-width: 500px;
+  height: auto;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.buttonOption {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.finalizeButton {
+  background-color: #dd2e44;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancelOption {
+  background-color: #757575;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.initializeButton {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+  text-align: center;
+}
+
+.infoBox {
+  border: 1px solid #ddd; 
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  background-color: #f9f9f9; 
+}

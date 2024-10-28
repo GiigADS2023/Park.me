@@ -1,0 +1,173 @@
+.div {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.body {
+    width: 90vw;
+    height: 100vh;
+}
+
+.main {
+    margin-top: 1.4rem;
+}
+
+.main .date {
+    display: inline-block;
+    background: #dce1eb;
+    border-radius: 0.4rem;
+    margin-top: 1rem;
+    padding: 0.5rem 1.6rem;
+}
+
+.main .date input[type='date'] {
+    background: transparent;
+    color: #7d8da1;
+    border: none; 
+    outline: none; 
+    font-size: 1rem;
+}
+
+.main .insights {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.6rem;
+}
+
+.main .insights > div {
+    background: #fff;
+    padding: 1.8rem;
+    border-radius: 2rem;
+    margin-top: 1rem;
+    box-shadow: 0 2rem 3rem rgba(132, 139, 200, 0.18);
+    transition: all 300ms ease;
+}
+
+.main .insights > div:hover {
+    box-shadow: none;
+}
+
+.main .insights > div span {
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 2rem;
+}
+
+
+.main .insights > div.carsParked span {
+    background: #7380ec; 
+}
+
+.main .insights > div.totalParking span {
+    background: #ff7782;
+}
+
+.main .insights > div .middle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.main .insights h3 {
+    margin: 1rem 0 0.6rem;
+    font-size: 1rem;
+}
+
+.main .insights .progress {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+}
+
+.main .insights svg {
+    width: 7rem;
+    height: 7rem;
+}
+
+.main .insights .carsParked svg circle {
+    fill: none;
+    stroke: #7380ec; 
+    stroke-width: 14;
+    stroke-linecap: round;
+    transform: translate(5px, 5px);
+    stroke-dashoffset: -30;
+    stroke-dasharray: 200;
+}
+
+.main .insights .totalParking svg circle {
+    fill: none;
+    stroke: #ff7782; 
+    stroke-width: 14;
+    stroke-linecap: round;
+    transform: translate(5px, 5px);
+    stroke-dashoffset: 20;
+    stroke-dasharray: 80;
+}
+
+.main .insights .carsParked svg circle {
+    stroke-dashoffset: -30;
+    stroke-dasharray: 200;
+}
+
+.main .insights .totalParking svg circle {
+    stroke-dashoffset: 20;
+    stroke-dasharray: 80;
+}
+
+.main .insights .progress .number {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main .insights small {
+    margin-top: 1.3rem;
+    display: block;
+}
+
+.main .recentOrders {
+    margin-top: 2rem;
+}
+
+.main .recentOrders h2 {
+    margin-bottom: 0.8rem;
+}
+
+.main .recentOrders table {
+    background: #fff;
+    width: 100%;
+    border-radius: 2rem;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 2rem 3rem rgba(132, 139, 200, 0.18);
+    transform: all 300ms ease;
+}
+
+.main .recentOrders table:hover {
+    box-shadow: none;
+}
+
+.main table tbody td {
+    height: 2.8rem;
+    border-bottom: 1px solid rgba(132, 139, 200, 0.18);
+    color: #677483
+}
+
+.main table tbody tr:last-child td {
+    border: none;
+}
+
+.main .recentOrders a {
+    text-align: center;
+    display: block;
+    margin: 1rem auto;
+    color: #7380ec;
+}

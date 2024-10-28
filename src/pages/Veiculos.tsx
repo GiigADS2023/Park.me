@@ -89,7 +89,7 @@ export default function Veiculos() {
   return (
     <BaseLayout>
       <div>
-        <div className="body">
+      <div className="body">
           <div className="container">
             <div className="header">
               <span>Cadastro de Carros</span>
@@ -397,7 +397,8 @@ export default function Veiculos() {
           width: 80%;
           margin: 10px auto;
           outline: none;
-          border-radius: 20px;
+          padding: 8px;
+          border-radius: 5px;
           padding: 5px 10px;
           border: none;
           background-color: #dd2e44;
@@ -408,7 +409,8 @@ export default function Veiculos() {
           width: 50%;
           margin: 10px auto;
           outline: none;
-          border-radius: 20px;
+          padding: 8px;
+          border-radius: 5px;
           padding: 5px 10px;
           border: none;
           background-color: #63625f;
@@ -432,10 +434,7 @@ export default function Veiculos() {
             opacity: 1;
             transform: translate3d(0, 0, 0);
           }
-        }
-
-
-      `}</style>
+        }`}</style>
     </BaseLayout>
   );
 }
