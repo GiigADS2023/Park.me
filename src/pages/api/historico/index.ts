@@ -7,17 +7,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         const historicos = await prisma.historico.findMany({
           include: {
-            veiculo: true,
+            veiculo: true, // Keep this if your DB uses 'veiculo'
           },
         });
-        console.log('Históricos:', historicos); // Adicione este log para verificar os dados
+        console.log('Históricos:', historicos);
         res.status(200).json(historicos);
       } catch (error) {
         console.error('Erro ao buscar histórico:', error);
         res.status(500).json({ error: 'Erro ao buscar histórico' });
       }
-      break;      
-    case 'POST':
+      break;
+
+    case 'POST': {
       const { veiculo_id, entrada } = req.body;
 
       try {
@@ -33,9 +34,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(500).json({ error: 'Erro ao criar histórico' });
       }
       break;
+    }
 
     default:
-      // Retorna erro 405 se o método não for GET ou POST
       res.setHeader('Allow', ['GET', 'POST']);
       res.status(405).end(`Método ${req.method} não permitido`);
       break;
