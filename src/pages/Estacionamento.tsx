@@ -56,6 +56,8 @@ export default function Estacionamento() {
   const [selectedHistorico, setSelectedHistorico] = useState<Historico | null>(null);
   const [isFinalizeMode, setIsFinalizeMode] = useState(false);
   const [saida, setSaida] = useState<string>("");
+  const [isInitializeMode, setIsInitializeMode] = useState(false);
+  const [initializeDateTime, setInitializeDateTime] = useState<string>("");
 
   // Fetch veiculos para popular o select
   useEffect(() => {
@@ -126,6 +128,7 @@ export default function Estacionamento() {
   const handleHistoricoClick = (historico: Historico) => {
     setSelectedHistorico(historico);
     setIsFinalizeMode(false); // Inicializa sem modo de finalização
+    setIsInitializeMode(false); // Inicializa sem modo de inicialização
   };
 
   const handleFinalize = async () => {
@@ -162,6 +165,51 @@ export default function Estacionamento() {
     }
   };
 
+  const handleInitialize = async () => {
+    console.log("Initialize DateTime:", initializeDateTime);
+    
+    // Usar o veiculo_id do selectedHistorico
+    const veiculoId = selectedHistorico?.veiculo.id;
+  
+    if (!initializeDateTime || !veiculoId) {
+      alert('Por favor, informe a data/hora de início e selecione um veículo.');
+      return;
+    }
+  
+    try {
+      const response = await axios.post('/api/historico', {
+        veiculo_id: veiculoId,  // Usar o veiculo_id do selectedHistorico
+        entrada: initializeDateTime,
+      });
+  
+      console.log("Resposta da API ao inicializar:", response.data);
+  
+      const novoHistorico = response.data;
+      const veiculoRelacionado = veiculos.find(v => v.id === novoHistorico.veiculo_id);
+  
+      if (veiculoRelacionado) {
+        setHistoricos(prevHistoricos => [
+          ...prevHistoricos,
+          {
+            ...novoHistorico,
+            veiculo: veiculoRelacionado,
+          },
+        ]);
+      }
+  
+      // Reseta o formulário e fecha o modal
+      setIsInitializeMode(false);
+      setSelectedHistorico(null); // Reseta o histórico selecionado
+      setInitializeDateTime("");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Erro ao inicializar histórico:', error.response ? error.response.data : error.message);
+      } else {
+        console.error('Erro inesperado:', error);
+      }
+    }
+  };   
+
   // Função para obter veículos disponíveis
   const getAvailableVeiculos = () => {
     const veiculoIdsNoHistorico = new Set(historicos.map(h => h.veiculo.id));
@@ -196,7 +244,7 @@ export default function Estacionamento() {
               </Card>
             ))}
 
-            {/* Botão para abrir o modal */}
+            {/* Botão para abrir o modal de entrada de veículos */}
             <Card className={styles.addCard} onClick={() => setIsModalOpen(true)}>
               +
             </Card>
@@ -211,132 +259,88 @@ export default function Estacionamento() {
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <h2 className={styles.modalTitle}>Histórico</h2>
 
-              {/* Caixa com borda ao redor das informações */}
               <div className={styles.infoBox}>
-                <h3>{new Date(selectedHistorico.entrada).toLocaleDateString()}</h3>
-                <div className={styles.timeInfo}>
-                  <span>
-                    {new Date(selectedHistorico.entrada).toLocaleTimeString()} ➔{' '}
-                    {selectedHistorico.saida
-                      ? new Date(selectedHistorico.saida).toLocaleTimeString()
-                      : '--:--:--'}
-                  </span>
-                </div>
-                <div className={styles.priceInfo}>
-                  <span>
-                    {selectedHistorico.preco != null && !isNaN(Number(selectedHistorico.preco))
-                      ? `R$${Number(selectedHistorico.preco).toFixed(2)}`
-                      : 'R$0,00'}
-                  </span>
-                </div>
+                <h3>{new Date(selectedHistorico.entrada).toLocaleString()}</h3>
+                <h3>{selectedHistorico.veiculo.placa}</h3>
+                <h3>{selectedHistorico.veiculo.modelo}</h3>
+                <h3>Preço: R${selectedHistorico.preco !== undefined && selectedHistorico.preco !== null ? Number(selectedHistorico.preco).toFixed(2) : '0.00'}</h3>
               </div>
 
-              <div className={styles.buttonOption}>
-                {!selectedHistorico.saida ? (
-                  <>
-                    <button
-                      className={styles.finalizeButton}
-                      onClick={() => setIsFinalizeMode(true)}
-                    >
-                      Finalizar
-                    </button>
-                    <button
-                      className={styles.cancelOption}
-                      onClick={() => setSelectedHistorico(null)}
-                    >
-                      Cancelar
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className={styles.initializeButton}
-                      onClick={() => alert('Funcionalidade de reinicialização aqui')}
-                    >
-                      Inicializar
-                    </button>
-                    <button
-                      className={styles.cancelOption}
-                      onClick={() => setSelectedHistorico(null)}
-                    >
-                      Cancelar
-                    </button>
-                  </>
-                )}
+              <div className={styles.buttonContainer}>
+                <button className={`${styles.button} ${styles.finalizeButton}`} onClick={() => {
+                  setIsFinalizeMode(true);
+                  setIsInitializeMode(false);
+                }}>
+                  Finalizar
+                </button>
+                <button className={`${styles.button} ${styles.initializeButton}`} onClick={() => {
+                  setIsInitializeMode(true);
+                  setIsFinalizeMode(false);
+                }}>
+                  Inicializar
+                </button>
               </div>
+
+              {isFinalizeMode && (
+                <div className={styles.inputContainer}>
+                  <h2>Saída:</h2>
+                  <input
+                    type="datetime-local"
+                    value={saida}
+                    onChange={(e) => setSaida(e.target.value)}
+                  />
+                  <button className={`${styles.button} ${styles.saveButton}`} onClick={handleFinalize}>Salvar Saída</button>
+                </div>
+              )}
+
+              {isInitializeMode && (
+                <div className={styles.inputContainer}>
+                  <h2>Data/Hora de Início:</h2>
+                  <input
+                    type="datetime-local"
+                    value={initializeDateTime}
+                    onChange={(e) => setInitializeDateTime(e.target.value)}
+                  />
+                  <button className={`${styles.button} ${styles.saveButton}`} onClick={handleInitialize}>Salvar Inicialização</button>
+                </div>
+              )}
             </div>
           </div>
         )}
-
-          {/* Modal para entrada de veículos */}
-          {isModalOpen && (
-            <div className={`${styles.modalContainer} ${isModalOpen ? styles.active : ''}`.trim()}>
-              <div className={styles.modal}>
-                <form>
-                  <h3>Entrada de veículo</h3>
-                  <label htmlFor="idVeiculo">Placa</label>
-                  <select
-                    id="idVeiculo"
-                    value={selectedVeiculoId || ""}
-                    onChange={(e) => setSelectedVeiculoId(Number(e.target.value))}
-                  >
-                    <option value="" disabled>
-                      Selecione um veículo
-                    </option>
-                    {getAvailableVeiculos().map((veiculo) => (
-                      <option key={veiculo.id} value={veiculo.id}>
-                        {veiculo.placa}
-                      </option>
-                    ))}
-                  </select>
-                  <label htmlFor="entrada">Entrada</label>
-                  <input
-                    type="datetime-local"
-                    id="entrada"
-                    value={entrada}
-                    onChange={(e) => setEntrada(e.target.value)}
-                    required
-                  />
-                  <div className={styles.buttonGroup}>
-                    <button type="button" className={styles.saveButton} onClick={handleSave}>
-                      Salvar
-                    </button>
-                    <button type="button" className={styles.cancelButton} onClick={closeModal}>
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Modal para finalização */}
-          {isFinalizeMode && (
-            <div className={`${styles.modalContainer} ${isFinalizeMode ? styles.active : ''}`.trim()}>
-              <div className={styles.modal}>
-                <form>
-                  <h3>Finalizar Estacionamento</h3>
-                  <label htmlFor="saida">Saída</label>
-                  <input
-                    type="datetime-local"
-                    id="saida"
-                    value={saida}
-                    onChange={(e) => setSaida(e.target.value)}
-                    required
-                  />
-                  <div className={styles.buttonGroup}>
-                    <button type="button" className={styles.saveButton} onClick={handleFinalize}>
-                      Finalizar
-                    </button>
-                    <button type="button" className={styles.cancelButton} onClick={() => setIsFinalizeMode(false)}>
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Modal de novo registro */}
+        {isModalOpen && (
+          <div
+            className={`${styles.modalContainer} ${styles.active}`.trim()}
+            onClick={closeModal}
+          >
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <h2>Registrar Entrada</h2>
+              <select
+                value={selectedVeiculoId || ""}
+                onChange={(e) => {
+                  const veiculoId = Number(e.target.value);
+                  setSelectedVeiculoId(veiculoId);
+                  console.log("Selected Vehicle ID after change:", veiculoId); // Adicione este log
+                }}
+              >
+                <option value="">Selecione um veículo</option>
+                {getAvailableVeiculos().map((veiculo) => (
+                  <option key={veiculo.id} value={veiculo.id}>
+                    {veiculo.placa} - {veiculo.modelo}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="datetime-local"
+                value={entrada}
+                onChange={(e) => setEntrada(e.target.value)}
+              />
+              <button className={`${styles.button} ${styles.saveButton}`} onClick={handleSave}>Salvar</button>
+            </div>
+          </div>
+        )}
       </div>
     </BaseLayout>
   );

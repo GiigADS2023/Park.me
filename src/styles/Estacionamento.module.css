@@ -130,31 +130,45 @@
     border-color: #dd2e44;
 }
 
-.buttonGroup {
-    display: flex;
-    justify-content: center; 
-    gap: 1rem; 
-    width: 100%; 
+.button {
+  display: inline-block;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin: 10px; 
 }
 
-.saveButton, .cancelButton {
-    flex: 1;
-    max-width: 150px;
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    text-align: center;
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: translateY(1px);
 }
 
 .saveButton {
-    background-color: #dd2e44; 
-    color: #fff; 
+  background-color: #dd2e44; 
+  color: white;
 }
 
 .cancelButton {
-    background-color: #63625f; 
-    color: #fff; 
+  background-color: #63625f; 
+  color: white;
+}
+
+.finalizeButton {
+  background-color: #dd2e44;
+  color: white;
+}
+
+.initializeButton {
+  background-color: #4caf50; 
+  color: white;
 }
 
 .active {
