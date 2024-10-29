@@ -17,15 +17,19 @@
     "react-icons": "^5.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.13.0",
     "@prisma/client": "^5.21.1",
     "@types/node": "^20",
     "@types/pg": "^8.11.10",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "cypress": "^13.15.1",
-    "eslint": "^8",
+    "eslint": "^8.57.1",
     "eslint-config-next": "14.2.15",
+    "eslint-plugin-react": "^7.37.2",
+    "globals": "^15.11.0",
     "prisma": "^5.21.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.12.2"
   }
 }
