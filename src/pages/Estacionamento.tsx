@@ -56,6 +56,8 @@ export default function Estacionamento() {
   const [selectedHistorico, setSelectedHistorico] = useState<Historico | null>(null);
   const [isFinalizeMode, setIsFinalizeMode] = useState(false);
   const [saida, setSaida] = useState<string>("");
+  const [isInitializeMode, setIsInitializeMode] = useState(false);
+  const [initializeDateTime, setInitializeDateTime] = useState<string>("");
 
   // Fetch veiculos para popular o select
   useEffect(() => {
@@ -82,6 +84,14 @@ export default function Estacionamento() {
     };
     fetchHistoricos();
   }, []);
+
+  const isValidDate = (startDate: string, endDate?: string): boolean => {
+    const start = new Date(startDate);
+    const end = endDate ? new Date(endDate) : new Date();
+  
+    return start <= end;
+  };
+  
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -126,6 +136,7 @@ export default function Estacionamento() {
   const handleHistoricoClick = (historico: Historico) => {
     setSelectedHistorico(historico);
     setIsFinalizeMode(false); // Inicializa sem modo de finalização
+    setIsInitializeMode(false); // Inicializa sem modo de inicialização
   };
 
   const handleFinalize = async () => {
@@ -133,18 +144,21 @@ export default function Estacionamento() {
       alert('Por favor, informe a saída.');
       return;
     }
-
-    // Calcular o preço com base na entrada e saída
+  
+    // Verifica se a saída é válida
+    if (!isValidDate(selectedHistorico.entrada, saida)) {
+      alert('A saída não pode ser anterior à entrada.');
+      return;
+    }
+  
     const finalPrice = calculatePrice(selectedHistorico.entrada, saida);
-
+  
     try {
-      // Atualizar o histórico no banco de dados
       await axios.put(`/api/historico/${selectedHistorico.id}`, {
         saida: saida,
         preco: finalPrice,
       });
-
-      // Atualizar o estado local com o histórico finalizado
+  
       setHistoricos((prevHistoricos) =>
         prevHistoricos.map((hist) =>
           hist.id === selectedHistorico.id
@@ -152,8 +166,7 @@ export default function Estacionamento() {
             : hist
         )
       );
-
-      // Fechar modal e atualizar painel de detalhes
+  
       setIsFinalizeMode(false);
       setSelectedHistorico({ ...selectedHistorico, saida, preco: finalPrice });
       setSaida("");
@@ -161,6 +174,43 @@ export default function Estacionamento() {
       console.error('Erro ao finalizar histórico:', error);
     }
   };
+
+  const handleInitialize = async () => {
+    if (!initializeDateTime || !selectedHistorico) {
+      alert('Por favor, informe a data/hora de início e selecione um veículo.');
+      return;
+    }
+  
+    // Verifica se a data de início é válida (mesmo dia ou depois da última saída)
+    const ultimaSaida = selectedHistorico.saida || selectedHistorico.entrada;
+    if (!isValidDate(ultimaSaida, initializeDateTime)) {
+      alert('A inicialização deve ser no mesmo dia ou depois da última saída.');
+      return;
+    }
+  
+    try {
+      const response = await axios.post('/api/historico', {
+        veiculo_id: selectedHistorico.veiculo.id,
+        entrada: initializeDateTime,
+      });
+  
+      const novoHistorico = response.data;
+      const veiculoRelacionado = veiculos.find((v) => v.id === novoHistorico.veiculo_id);
+  
+      if (veiculoRelacionado) {
+        setHistoricos((prevHistoricos) => [
+          ...prevHistoricos,
+          { ...novoHistorico, veiculo: veiculoRelacionado },
+        ]);
+      }
+  
+      setIsInitializeMode(false);
+      setSelectedHistorico(null);
+      setInitializeDateTime("");
+    } catch (error) {
+      console.error('Erro ao inicializar histórico:', error);
+    }
+  };        
 
   // Função para obter veículos disponíveis
   const getAvailableVeiculos = () => {
@@ -196,7 +246,7 @@ export default function Estacionamento() {
               </Card>
             ))}
 
-            {/* Botão para abrir o modal */}
+            {/* Botão para abrir o modal de entrada de veículos */}
             <Card className={styles.addCard} onClick={() => setIsModalOpen(true)}>
               +
             </Card>
@@ -211,132 +261,88 @@ export default function Estacionamento() {
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <h2 className={styles.modalTitle}>Histórico</h2>
 
-              {/* Caixa com borda ao redor das informações */}
               <div className={styles.infoBox}>
-                <h3>{new Date(selectedHistorico.entrada).toLocaleDateString()}</h3>
-                <div className={styles.timeInfo}>
-                  <span>
-                    {new Date(selectedHistorico.entrada).toLocaleTimeString()} ➔{' '}
-                    {selectedHistorico.saida
-                      ? new Date(selectedHistorico.saida).toLocaleTimeString()
-                      : '--:--:--'}
-                  </span>
-                </div>
-                <div className={styles.priceInfo}>
-                  <span>
-                    {selectedHistorico.preco != null && !isNaN(Number(selectedHistorico.preco))
-                      ? `R$${Number(selectedHistorico.preco).toFixed(2)}`
-                      : 'R$0,00'}
-                  </span>
-                </div>
+                <h3>{new Date(selectedHistorico.entrada).toLocaleString()}</h3>
+                <h3>{selectedHistorico.veiculo.placa}</h3>
+                <h3>{selectedHistorico.veiculo.modelo}</h3>
+                <h3>Preço: R${selectedHistorico.preco !== undefined && selectedHistorico.preco !== null ? Number(selectedHistorico.preco).toFixed(2) : '0.00'}</h3>
               </div>
 
-              <div className={styles.buttonOption}>
-                {!selectedHistorico.saida ? (
-                  <>
-                    <button
-                      className={styles.finalizeButton}
-                      onClick={() => setIsFinalizeMode(true)}
-                    >
-                      Finalizar
-                    </button>
-                    <button
-                      className={styles.cancelOption}
-                      onClick={() => setSelectedHistorico(null)}
-                    >
-                      Cancelar
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className={styles.initializeButton}
-                      onClick={() => alert('Funcionalidade de reinicialização aqui')}
-                    >
-                      Inicializar
-                    </button>
-                    <button
-                      className={styles.cancelOption}
-                      onClick={() => setSelectedHistorico(null)}
-                    >
-                      Cancelar
-                    </button>
-                  </>
-                )}
+              <div className={styles.buttonContainer}>
+                <button className={`${styles.button} ${styles.initializeButton}`} onClick={() => {
+                  setIsInitializeMode(true);
+                  setIsFinalizeMode(false);
+                }}>
+                  Inicializar
+                </button>
+                <button className={`${styles.button} ${styles.finalizeButton}`} onClick={() => {
+                  setIsFinalizeMode(true);
+                  setIsInitializeMode(false);
+                }}>
+                  Finalizar
+                </button>
               </div>
+
+              {isFinalizeMode && (
+                <div className={styles.inputContainer}>
+                  <h2>Saída:</h2>
+                  <input
+                    type="datetime-local"
+                    value={saida}
+                    onChange={(e) => setSaida(e.target.value)}
+                  />
+                  <button className={`${styles.button} ${styles.saveButton}`} onClick={handleFinalize}>Salvar Saída</button>
+                </div>
+              )}
+
+              {isInitializeMode && (
+                <div className={styles.inputContainer}>
+                  <h2>Data/Hora de Início:</h2>
+                  <input
+                    type="datetime-local"
+                    value={initializeDateTime}
+                    onChange={(e) => setInitializeDateTime(e.target.value)}
+                  />
+                  <button className={`${styles.button} ${styles.saveButton}`} onClick={handleInitialize}>Salvar Inicialização</button>
+                </div>
+              )}
             </div>
           </div>
         )}
-
-          {/* Modal para entrada de veículos */}
-          {isModalOpen && (
-            <div className={`${styles.modalContainer} ${isModalOpen ? styles.active : ''}`.trim()}>
-              <div className={styles.modal}>
-                <form>
-                  <h3>Entrada de veículo</h3>
-                  <label htmlFor="idVeiculo">Placa</label>
-                  <select
-                    id="idVeiculo"
-                    value={selectedVeiculoId || ""}
-                    onChange={(e) => setSelectedVeiculoId(Number(e.target.value))}
-                  >
-                    <option value="" disabled>
-                      Selecione um veículo
-                    </option>
-                    {getAvailableVeiculos().map((veiculo) => (
-                      <option key={veiculo.id} value={veiculo.id}>
-                        {veiculo.placa}
-                      </option>
-                    ))}
-                  </select>
-                  <label htmlFor="entrada">Entrada</label>
-                  <input
-                    type="datetime-local"
-                    id="entrada"
-                    value={entrada}
-                    onChange={(e) => setEntrada(e.target.value)}
-                    required
-                  />
-                  <div className={styles.buttonGroup}>
-                    <button type="button" className={styles.saveButton} onClick={handleSave}>
-                      Salvar
-                    </button>
-                    <button type="button" className={styles.cancelButton} onClick={closeModal}>
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Modal para finalização */}
-          {isFinalizeMode && (
-            <div className={`${styles.modalContainer} ${isFinalizeMode ? styles.active : ''}`.trim()}>
-              <div className={styles.modal}>
-                <form>
-                  <h3>Finalizar Estacionamento</h3>
-                  <label htmlFor="saida">Saída</label>
-                  <input
-                    type="datetime-local"
-                    id="saida"
-                    value={saida}
-                    onChange={(e) => setSaida(e.target.value)}
-                    required
-                  />
-                  <div className={styles.buttonGroup}>
-                    <button type="button" className={styles.saveButton} onClick={handleFinalize}>
-                      Finalizar
-                    </button>
-                    <button type="button" className={styles.cancelButton} onClick={() => setIsFinalizeMode(false)}>
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Modal de novo registro */}
+        {isModalOpen && (
+          <div
+            className={`${styles.modalContainer} ${styles.active}`.trim()}
+            onClick={closeModal}
+          >
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <h2>Registrar Entrada</h2>
+              <select
+            value={selectedVeiculoId || ""}
+            onChange={(e) => {
+              const veiculoId = Number(e.target.value);
+              setSelectedVeiculoId(veiculoId);
+              console.log("Selected Vehicle ID after change:", veiculoId); // Adicione este log
+            }}
+          >
+                <option value="">Selecione um veículo</option>
+                {getAvailableVeiculos().map((veiculo) => (
+                  <option key={veiculo.id} value={veiculo.id}>
+                    {veiculo.placa} - {veiculo.modelo}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="datetime-local"
+                value={entrada}
+                onChange={(e) => setEntrada(e.target.value)}
+              />
+              <button className={`${styles.button} ${styles.saveButton}`} onClick={handleSave}>Salvar</button>
+            </div>
+          </div>
+        )}
       </div>
     </BaseLayout>
   );

@@ -21,7 +21,7 @@
     "@prisma/client": "^5.21.1",
     "@types/node": "^20",
     "@types/pg": "^8.11.10",
-    "@types/react": "^18",
+    "@types/react": "18.3.12",
     "@types/react-dom": "^18",
     "cypress": "^13.15.1",
     "eslint": "^8.57.1",
