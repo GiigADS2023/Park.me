@@ -85,6 +85,14 @@ export default function Estacionamento() {
     fetchHistoricos();
   }, []);
 
+  const isValidDate = (startDate: string, endDate?: string): boolean => {
+    const start = new Date(startDate);
+    const end = endDate ? new Date(endDate) : new Date();
+  
+    return start <= end;
+  };
+  
+
   const closeModal = () => {
     setIsModalOpen(false);
   };
@@ -136,18 +144,21 @@ export default function Estacionamento() {
       alert('Por favor, informe a saída.');
       return;
     }
-
-    // Calcular o preço com base na entrada e saída
+  
+    // Verifica se a saída é válida
+    if (!isValidDate(selectedHistorico.entrada, saida)) {
+      alert('A saída não pode ser anterior à entrada.');
+      return;
+    }
+  
     const finalPrice = calculatePrice(selectedHistorico.entrada, saida);
-
+  
     try {
-      // Atualizar o histórico no banco de dados
       await axios.put(`/api/historico/${selectedHistorico.id}`, {
         saida: saida,
         preco: finalPrice,
       });
-
-      // Atualizar o estado local com o histórico finalizado
+  
       setHistoricos((prevHistoricos) =>
         prevHistoricos.map((hist) =>
           hist.id === selectedHistorico.id
@@ -155,8 +166,7 @@ export default function Estacionamento() {
             : hist
         )
       );
-
-      // Fechar modal e atualizar painel de detalhes
+  
       setIsFinalizeMode(false);
       setSelectedHistorico({ ...selectedHistorico, saida, preco: finalPrice });
       setSaida("");
@@ -166,49 +176,41 @@ export default function Estacionamento() {
   };
 
   const handleInitialize = async () => {
-    console.log("Initialize DateTime:", initializeDateTime);
-    
-    // Usar o veiculo_id do selectedHistorico
-    const veiculoId = selectedHistorico?.veiculo.id;
-  
-    if (!initializeDateTime || !veiculoId) {
+    if (!initializeDateTime || !selectedHistorico) {
       alert('Por favor, informe a data/hora de início e selecione um veículo.');
+      return;
+    }
+  
+    // Verifica se a data de início é válida (mesmo dia ou depois da última saída)
+    const ultimaSaida = selectedHistorico.saida || selectedHistorico.entrada;
+    if (!isValidDate(ultimaSaida, initializeDateTime)) {
+      alert('A inicialização deve ser no mesmo dia ou depois da última saída.');
       return;
     }
   
     try {
       const response = await axios.post('/api/historico', {
-        veiculo_id: veiculoId,  // Usar o veiculo_id do selectedHistorico
+        veiculo_id: selectedHistorico.veiculo.id,
         entrada: initializeDateTime,
       });
   
-      console.log("Resposta da API ao inicializar:", response.data);
-  
       const novoHistorico = response.data;
-      const veiculoRelacionado = veiculos.find(v => v.id === novoHistorico.veiculo_id);
+      const veiculoRelacionado = veiculos.find((v) => v.id === novoHistorico.veiculo_id);
   
       if (veiculoRelacionado) {
-        setHistoricos(prevHistoricos => [
+        setHistoricos((prevHistoricos) => [
           ...prevHistoricos,
-          {
-            ...novoHistorico,
-            veiculo: veiculoRelacionado,
-          },
+          { ...novoHistorico, veiculo: veiculoRelacionado },
         ]);
       }
   
-      // Reseta o formulário e fecha o modal
       setIsInitializeMode(false);
-      setSelectedHistorico(null); // Reseta o histórico selecionado
+      setSelectedHistorico(null);
       setInitializeDateTime("");
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Erro ao inicializar histórico:', error.response ? error.response.data : error.message);
-      } else {
-        console.error('Erro inesperado:', error);
-      }
+      console.error('Erro ao inicializar histórico:', error);
     }
-  };   
+  };        
 
   // Função para obter veículos disponíveis
   const getAvailableVeiculos = () => {
@@ -267,17 +269,17 @@ export default function Estacionamento() {
               </div>
 
               <div className={styles.buttonContainer}>
-                <button className={`${styles.button} ${styles.finalizeButton}`} onClick={() => {
-                  setIsFinalizeMode(true);
-                  setIsInitializeMode(false);
-                }}>
-                  Finalizar
-                </button>
                 <button className={`${styles.button} ${styles.initializeButton}`} onClick={() => {
                   setIsInitializeMode(true);
                   setIsFinalizeMode(false);
                 }}>
                   Inicializar
+                </button>
+                <button className={`${styles.button} ${styles.finalizeButton}`} onClick={() => {
+                  setIsFinalizeMode(true);
+                  setIsInitializeMode(false);
+                }}>
+                  Finalizar
                 </button>
               </div>
 
@@ -318,13 +320,13 @@ export default function Estacionamento() {
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <h2>Registrar Entrada</h2>
               <select
-                value={selectedVeiculoId || ""}
-                onChange={(e) => {
-                  const veiculoId = Number(e.target.value);
-                  setSelectedVeiculoId(veiculoId);
-                  console.log("Selected Vehicle ID after change:", veiculoId); // Adicione este log
-                }}
-              >
+            value={selectedVeiculoId || ""}
+            onChange={(e) => {
+              const veiculoId = Number(e.target.value);
+              setSelectedVeiculoId(veiculoId);
+              console.log("Selected Vehicle ID after change:", veiculoId); // Adicione este log
+            }}
+          >
                 <option value="">Selecione um veículo</option>
                 {getAvailableVeiculos().map((veiculo) => (
                   <option key={veiculo.id} value={veiculo.id}>
