@@ -3,6 +3,7 @@ import { PiClockCountdownThin } from "react-icons/pi";
 import React, { ReactNode, useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from '../styles/Estacionamento.module.css';
+import { IoIosSearch } from "react-icons/io";
 
 interface Veiculo {
   id: number;
@@ -27,10 +28,7 @@ interface CardProps {
 
 function Card({ children, className = '', onClick }: CardProps) {
   return (
-    <div
-      className={`${styles.cardContainer} ${className}`.trim()}
-      onClick={onClick}
-    >
+    <div className={`${styles.cardContainer} ${className}`.trim()} onClick={onClick}>
       {children}
     </div>
   );
@@ -39,7 +37,6 @@ function Card({ children, className = '', onClick }: CardProps) {
 // Função para calcular o preço baseado no tempo de estacionamento
 const calculatePrice = (entrada: string, saida?: string): number => {
   if (!saida) return 0; // Se não há saída, o preço é 0
-
   const entradaDate = new Date(entrada);
   const saidaDate = new Date(saida);
   const diffInHours = (saidaDate.getTime() - entradaDate.getTime()) / (1000 * 60 * 60);
@@ -53,11 +50,13 @@ export default function Estacionamento() {
   const [selectedVeiculoId, setSelectedVeiculoId] = useState<number | null>(null);
   const [entrada, setEntrada] = useState<string>("");
   const [historicos, setHistoricos] = useState<Historico[]>([]);
+  const [filteredHistoricos, setFilteredHistoricos] = useState<Historico[]>([]);
   const [selectedHistorico, setSelectedHistorico] = useState<Historico | null>(null);
   const [isFinalizeMode, setIsFinalizeMode] = useState(false);
   const [saida, setSaida] = useState<string>("");
   const [isInitializeMode, setIsInitializeMode] = useState(false);
   const [initializeDateTime, setInitializeDateTime] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // Fetch veiculos para popular o select
   useEffect(() => {
@@ -78,6 +77,7 @@ export default function Estacionamento() {
       try {
         const response = await axios.get('/api/historico');
         setHistoricos(response.data);
+        setFilteredHistoricos(response.data);
       } catch (error) {
         console.error('Erro ao buscar histórico:', error);
       }
@@ -88,10 +88,8 @@ export default function Estacionamento() {
   const isValidDate = (startDate: string, endDate?: string): boolean => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date();
-  
     return start <= end;
   };
-  
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -104,27 +102,18 @@ export default function Estacionamento() {
     }
 
     try {
-      // Cria um novo registro no histórico
       const response = await axios.post('/api/historico', {
         veiculo_id: selectedVeiculoId,
         entrada: entrada,
       });
 
-      // Adiciona o novo registro ao estado
       const novoHistorico = response.data;
       const veiculoRelacionado = veiculos.find(v => v.id === novoHistorico.veiculo_id);
 
       if (veiculoRelacionado) {
-        setHistoricos([
-          ...historicos,
-          {
-            ...novoHistorico,
-            veiculo: veiculoRelacionado
-          }
-        ]);
+        setHistoricos([...historicos, { ...novoHistorico, veiculo: veiculoRelacionado }]);
       }
 
-      // Reseta o formulário e fecha o modal
       setIsModalOpen(false);
       setSelectedVeiculoId(null);
       setEntrada("");
@@ -135,8 +124,8 @@ export default function Estacionamento() {
 
   const handleHistoricoClick = (historico: Historico) => {
     setSelectedHistorico(historico);
-    setIsFinalizeMode(false); // Inicializa sem modo de finalização
-    setIsInitializeMode(false); // Inicializa sem modo de inicialização
+    setIsFinalizeMode(false);
+    setIsInitializeMode(false);
   };
 
   const handleFinalize = async () => {
@@ -144,29 +133,28 @@ export default function Estacionamento() {
       alert('Por favor, informe a saída.');
       return;
     }
-  
-    // Verifica se a saída é válida
+
     if (!isValidDate(selectedHistorico.entrada, saida)) {
       alert('A saída não pode ser anterior à entrada.');
       return;
     }
-  
+
     const finalPrice = calculatePrice(selectedHistorico.entrada, saida);
-  
+
     try {
       await axios.put(`/api/historico/${selectedHistorico.id}`, {
         saida: saida,
         preco: finalPrice,
       });
-  
-      setHistoricos((prevHistoricos) =>
-        prevHistoricos.map((hist) =>
+
+      setHistoricos(prevHistoricos =>
+        prevHistoricos.map(hist =>
           hist.id === selectedHistorico.id
             ? { ...hist, saida: saida, preco: finalPrice }
             : hist
         )
       );
-  
+
       setIsFinalizeMode(false);
       setSelectedHistorico({ ...selectedHistorico, saida, preco: finalPrice });
       setSaida("");
@@ -180,51 +168,65 @@ export default function Estacionamento() {
       alert('Por favor, informe a data/hora de início e selecione um veículo.');
       return;
     }
-  
-    // Verifica se a data de início é válida (mesmo dia ou depois da última saída)
+
     const ultimaSaida = selectedHistorico.saida || selectedHistorico.entrada;
     if (!isValidDate(ultimaSaida, initializeDateTime)) {
       alert('A inicialização deve ser no mesmo dia ou depois da última saída.');
       return;
     }
-  
+
     try {
       const response = await axios.post('/api/historico', {
         veiculo_id: selectedHistorico.veiculo.id,
         entrada: initializeDateTime,
       });
-  
+
       const novoHistorico = response.data;
       const veiculoRelacionado = veiculos.find((v) => v.id === novoHistorico.veiculo_id);
-  
+
       if (veiculoRelacionado) {
-        setHistoricos((prevHistoricos) => [
-          ...prevHistoricos,
-          { ...novoHistorico, veiculo: veiculoRelacionado },
-        ]);
+        setHistoricos(prevHistoricos => [...prevHistoricos, { ...novoHistorico, veiculo: veiculoRelacionado }]);
       }
-  
+
       setIsInitializeMode(false);
       setSelectedHistorico(null);
       setInitializeDateTime("");
     } catch (error) {
       console.error('Erro ao inicializar histórico:', error);
     }
-  };        
+  };
 
-  // Função para obter veículos disponíveis
   const getAvailableVeiculos = () => {
     const veiculoIdsNoHistorico = new Set(historicos.map(h => h.veiculo.id));
     return veiculos.filter(v => !veiculoIdsNoHistorico.has(v.id));
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const term = event.target.value.toLowerCase();
+    setSearchTerm(term);
+    const filtered = historicos.filter((historico) =>
+      historico.veiculo.placa.toLowerCase().includes(term)
+    );
+    setFilteredHistoricos(filtered);
   };
 
   return (
     <BaseLayout>
       <div className={styles.div}>
         <div className={styles.body}>
+          <div className={styles.searchContainer}>
+            <div className={styles.searchWrapper}>
+              <input
+                type="text"
+                placeholder="Pesquisar por placa..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+              <IoIosSearch className={styles.searchIcon} />
+            </div>
+          </div>
           <div className={styles.mainContainer}>
-            {/* Renderiza os registros do histórico */}
-            {historicos.map((historico) => (
+            {filteredHistoricos.map((historico) => (
               <Card key={historico.id} onClick={() => handleHistoricoClick(historico)}>
                 <div className={styles.identifierContainer}>
                   <h2>{historico.veiculo.placa}</h2>
