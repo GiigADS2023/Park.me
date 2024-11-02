@@ -36,6 +36,10 @@ export default function Veiculos() {
   };
 
   const handleSave = async () => {
+    if (!formData.placa || !formData.modelo || !formData.cor || !formData.proprietario) {
+      alert("Por favor, preencha todos os campos.");
+    }
+
     try {
       const placaJaExiste = veiculos.some(
         (veiculo) => veiculo.placa === formData.placa && veiculo.id !== formData.id
@@ -48,8 +52,10 @@ export default function Veiculos() {
 
       if (formData.id) {
         await axios.put(`/api/veiculos/${formData.id}`, formData);
+        alert("Veículo editado com sucesso."); 
       } else {
         await axios.post("/api/veiculos", formData);
+        alert("Veículo cadastrado com sucesso."); 
       }
 
       fetchVeiculos();
@@ -70,15 +76,17 @@ export default function Veiculos() {
       "Tem certeza de que deseja excluir este veículo?"
     );
   
-    if (!confirmDelete) return; // Se o usuário cancelar, a função para por aqui.
+    if (!confirmDelete) return; 
   
     try {
       await axios.delete(`/api/veiculos/${id}`);
       fetchVeiculos();
+      alert("Veículo excluído com sucesso."); 
     } catch (error) {
       console.error("Erro ao excluir veículo:", error);
     }
-  };  
+  };
+  
 
   const closeModal = () => {
     setIsModalOpen(false);

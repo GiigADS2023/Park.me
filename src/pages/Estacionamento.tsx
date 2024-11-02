@@ -102,17 +102,13 @@ export default function Estacionamento() {
     }
 
     try {
-      const response = await axios.post('/api/historico', {
+      await axios.post('/api/historico', {
         veiculo_id: selectedVeiculoId,
         entrada: entrada,
       });
 
-      const novoHistorico = response.data;
-      const veiculoRelacionado = veiculos.find(v => v.id === novoHistorico.veiculo_id);
-
-      if (veiculoRelacionado) {
-        setHistoricos([...historicos, { ...novoHistorico, veiculo: veiculoRelacionado }]);
-      }
+      // Refaça a busca pelos históricos após salvar
+      fetchHistoricos();
 
       setIsModalOpen(false);
       setSelectedVeiculoId(null);
@@ -147,25 +143,26 @@ export default function Estacionamento() {
         preco: finalPrice,
       });
 
-      setHistoricos(prevHistoricos =>
-        prevHistoricos.map(hist =>
-          hist.id === selectedHistorico.id
-            ? { ...hist, saida: saida, preco: finalPrice }
-            : hist
-        )
-      );
+      // Refaça a busca pelos históricos após finalizar
+      fetchHistoricos();
 
       setIsFinalizeMode(false);
-      setSelectedHistorico({ ...selectedHistorico, saida, preco: finalPrice });
+      setSelectedHistorico(null);
       setSaida("");
     } catch (error) {
       console.error('Erro ao finalizar histórico:', error);
     }
   };
 
+
   const handleInitialize = async () => {
     if (!initializeDateTime || !selectedHistorico) {
       alert('Por favor, informe a data/hora de início e selecione um veículo.');
+      return;
+    }
+
+    if (!isDateWithinRange(initializeDateTime)) {
+      alert('A data/hora de inicialização deve estar entre hoje e um ano no futuro.');
       return;
     }
 
@@ -176,23 +173,29 @@ export default function Estacionamento() {
     }
 
     try {
-      const response = await axios.post('/api/historico', {
+      await axios.post('/api/historico', {
         veiculo_id: selectedHistorico.veiculo.id,
         entrada: initializeDateTime,
       });
 
-      const novoHistorico = response.data;
-      const veiculoRelacionado = veiculos.find((v) => v.id === novoHistorico.veiculo_id);
-
-      if (veiculoRelacionado) {
-        setHistoricos(prevHistoricos => [...prevHistoricos, { ...novoHistorico, veiculo: veiculoRelacionado }]);
-      }
+      // Refaça a busca pelos históricos após inicializar
+      fetchHistoricos();
 
       setIsInitializeMode(false);
       setSelectedHistorico(null);
       setInitializeDateTime("");
     } catch (error) {
       console.error('Erro ao inicializar histórico:', error);
+    }
+  };
+
+  const fetchHistoricos = async () => {
+    try {
+      const response = await axios.get('/api/historico');
+      setHistoricos(response.data);
+      setFilteredHistoricos(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar histórico:', error);
     }
   };
 
@@ -209,6 +212,16 @@ export default function Estacionamento() {
     );
     setFilteredHistoricos(filtered);
   };
+
+  const isDateWithinRange = (dateString: string): boolean => {
+  const date = new Date(dateString);
+  const today = new Date(); 
+  const maxDate = new Date();
+    maxDate.setFullYear(today.getFullYear() + 1);
+
+    return date >= today && date <= maxDate;
+  };
+
 
   return (
     <BaseLayout>
