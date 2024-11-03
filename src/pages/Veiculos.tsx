@@ -3,6 +3,10 @@ import BaseLayout from "@/components/BaseLayout";
 import axios from "axios";
 import { LiaEdit } from "react-icons/lia";
 import { MdDelete } from "react-icons/md";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import { confirmAlert } from "react-confirm-alert";
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 interface Veiculo {
   id: number;
@@ -16,7 +20,7 @@ export default function Veiculos() {
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Veiculo>>({});
-  const [isEditMode, setIsEditMode] = useState(false); // Novo estado para verificar se estamos no modo de edição
+  const [isEditMode, setIsEditMode] = useState(false);
 
   useEffect(() => {
     fetchVeiculos();
@@ -32,12 +36,30 @@ export default function Veiculos() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "placa") {
+      const cleanedValue = value.replace(/\W/g, "");
+      const formattedValue = cleanedValue
+        .replace(/(\w{3})(\w{0,4})/, "$1-$2")
+        .slice(0, 8);
+
+      setFormData({ ...formData, [name]: formattedValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSave = async () => {
     if (!formData.placa || !formData.modelo || !formData.cor || !formData.proprietario) {
-      alert("Por favor, preencha todos os campos.");
+      toast.error("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    const placaRegex = /^[A-Z]{3}-\d{4}$/i;
+    if (!placaRegex.test(formData.placa)) {
+      toast.error("A placa deve estar no formato 'XXX-XXXX'.");
+      return;
     }
 
     try {
@@ -46,16 +68,16 @@ export default function Veiculos() {
       );
 
       if (placaJaExiste) {
-        alert("Já existe um veículo com essa placa.");
+        toast.warning("Já existe um veículo com essa placa.");
         return;
       }
 
       if (formData.id) {
         await axios.put(`/api/veiculos/${formData.id}`, formData);
-        alert("Veículo editado com sucesso."); 
+        toast.success("Veículo editado com sucesso.");
       } else {
         await axios.post("/api/veiculos", formData);
-        alert("Veículo cadastrado com sucesso."); 
+        toast.success("Veículo cadastrado com sucesso.");
       }
 
       fetchVeiculos();
@@ -65,39 +87,49 @@ export default function Veiculos() {
     }
   };
 
-  const handleEdit = (veiculo: Veiculo) => {
-    setFormData(veiculo);
-    setIsEditMode(true); // Ativa o modo de edição
-    setIsModalOpen(true);
-  };
-
   const handleDelete = async (id: number) => {
-    const confirmDelete = window.confirm(
-      "Tem certeza de que deseja excluir este veículo?"
-    );
-  
-    if (!confirmDelete) return; 
-  
-    try {
-      await axios.delete(`/api/veiculos/${id}`);
-      fetchVeiculos();
-      alert("Veículo excluído com sucesso."); 
-    } catch (error) {
-      console.error("Erro ao excluir veículo:", error);
-    }
+    confirmAlert({
+      title: "Confirmação de exclusão",
+      message: "Tem certeza de que deseja excluir este veículo?",
+      buttons: [
+        {
+          label: "Sim",
+          onClick: async () => {
+            try {
+              await axios.delete(`/api/veiculos/${id}`);
+              fetchVeiculos();
+              toast.success("Veículo excluído com sucesso.");
+            } catch (error) {
+              console.error("Erro ao excluir veículo:", error);
+            }
+          },
+        },
+        {
+          label: "Não",
+          onClick: () => {} 
+        }
+      ],
+      overlayClassName: "confirm-overlay"
+    });
   };
-  
 
   const closeModal = () => {
     setIsModalOpen(false);
     setFormData({});
-    setIsEditMode(false); // Desativa o modo de edição ao fechar o modal
+    setIsEditMode(false);
+  };
+
+  const handleEdit = (veiculo: Veiculo) => {
+    setFormData(veiculo); // Populate form with selected vehicle data
+    setIsEditMode(true); // Set edit mode
+    setIsModalOpen(true); // Open modal
   };
 
   return (
     <BaseLayout>
+      <ToastContainer position="top-right" autoClose={3000} />
       <div>
-      <div className="body">
+        <div className="body">
           <div className="container">
             <div className="header">
               <span>Cadastro de Carros</span>
@@ -181,7 +213,7 @@ export default function Veiculos() {
                       required
                       value={formData.placa || ""}
                       onChange={handleInputChange}
-                      disabled={isEditMode} // Desativa a edição da placa se for modo de edição
+                      disabled={isEditMode} 
                     />
                     <label htmlFor="m-modelo">Modelo</label>
                     <input
@@ -230,7 +262,11 @@ export default function Veiculos() {
           </div>
         </div>
       </div>
-      <style jsx>{`        
+      <style jsx>{`  
+        .confirm-overlay {
+          background: rgba(255, 255, 0, 0.7);
+        }
+
         div {
           margin: 0;
           padding: 0;

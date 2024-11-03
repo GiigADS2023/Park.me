@@ -108,13 +108,13 @@
 }
 
 .main .insights .carsParked svg circle {
-    stroke-dashoffset: -30;
-    stroke-dasharray: 200;
+    stroke-dashoffset: 20;
+    stroke-dasharray: 250;
 }
 
 .main .insights .totalParking svg circle {
     stroke-dashoffset: 20;
-    stroke-dasharray: 80;
+    stroke-dasharray: 250;
 }
 
 .main .insights .progress .number {

@@ -4,6 +4,7 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import axios from 'axios';
 import styles from '../styles/Estacionamento.module.css';
 import { IoIosSearch } from "react-icons/io";
+import { ToastContainer, toast } from "react-toastify";
 
 interface Veiculo {
   id: number;
@@ -97,22 +98,23 @@ export default function Estacionamento() {
 
   const handleSave = async () => {
     if (!selectedVeiculoId || !entrada) {
-      alert('Por favor, selecione um veículo e informe a entrada.');
+      toast.warning("Por favor, selecione um veículo e informe a entrada.");
       return;
     }
-
+  
     try {
       await axios.post('/api/historico', {
         veiculo_id: selectedVeiculoId,
         entrada: entrada,
       });
-
+  
       // Refaça a busca pelos históricos após salvar
       fetchHistoricos();
-
+  
       setIsModalOpen(false);
       setSelectedVeiculoId(null);
       setEntrada("");
+      toast.success("Entrada registrada com sucesso!"); 
     } catch (error) {
       console.error('Erro ao salvar histórico:', error);
     }
@@ -123,71 +125,70 @@ export default function Estacionamento() {
     setIsFinalizeMode(false);
     setIsInitializeMode(false);
   };
-
+  
   const handleFinalize = async () => {
     if (!saida || !selectedHistorico) {
-      alert('Por favor, informe a saída.');
+      toast.warning("Por favor, informe a saída.");
       return;
     }
-
+  
     if (!isValidDate(selectedHistorico.entrada, saida)) {
-      alert('A saída não pode ser anterior à entrada.');
+      toast.warning("A saída não pode ser anterior à entrada.");
       return;
     }
-
+  
     const finalPrice = calculatePrice(selectedHistorico.entrada, saida);
-
+  
     try {
       await axios.put(`/api/historico/${selectedHistorico.id}`, {
         saida: saida,
         preco: finalPrice,
       });
-
-      // Refaça a busca pelos históricos após finalizar
+  
       fetchHistoricos();
-
+  
       setIsFinalizeMode(false);
       setSelectedHistorico(null);
       setSaida("");
+      toast.success("Saida registrada com sucesso!");
     } catch (error) {
       console.error('Erro ao finalizar histórico:', error);
     }
   };
-
-
+  
   const handleInitialize = async () => {
     if (!initializeDateTime || !selectedHistorico) {
-      alert('Por favor, informe a data/hora de início e selecione um veículo.');
+      toast.warning("Por favor, informe a data/hora de início.");
       return;
     }
-
+  
     if (!isDateWithinRange(initializeDateTime)) {
-      alert('A data/hora de inicialização deve estar entre hoje e um ano no futuro.');
+      toast.warning('A data/hora de inicialização deve estar entre hoje e um ano no futuro.');
       return;
     }
-
+  
     const ultimaSaida = selectedHistorico.saida || selectedHistorico.entrada;
     if (!isValidDate(ultimaSaida, initializeDateTime)) {
-      alert('A inicialização deve ser no mesmo dia ou depois da última saída.');
+      toast.warning('A inicialização não pode ser anterior à última saída.');
       return;
     }
-
+  
     try {
       await axios.post('/api/historico', {
         veiculo_id: selectedHistorico.veiculo.id,
         entrada: initializeDateTime,
       });
-
-      // Refaça a busca pelos históricos após inicializar
+  
       fetchHistoricos();
-
+  
       setIsInitializeMode(false);
       setSelectedHistorico(null);
       setInitializeDateTime("");
+      toast.success("Inicialização registrada com sucesso!");
     } catch (error) {
       console.error('Erro ao inicializar histórico:', error);
     }
-  };
+  };  
 
   const fetchHistoricos = async () => {
     try {
@@ -225,6 +226,7 @@ export default function Estacionamento() {
 
   return (
     <BaseLayout>
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className={styles.div}>
         <div className={styles.body}>
           <div className={styles.searchContainer}>
@@ -339,7 +341,7 @@ export default function Estacionamento() {
             onChange={(e) => {
               const veiculoId = Number(e.target.value);
               setSelectedVeiculoId(veiculoId);
-              console.log("Selected Vehicle ID after change:", veiculoId); // Adicione este log
+              console.log("Selected Vehicle ID after change:", veiculoId); 
             }}
           >
                 <option value="">Selecione um veículo</option>

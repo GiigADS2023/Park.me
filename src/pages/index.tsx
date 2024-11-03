@@ -90,7 +90,7 @@ export default function Home() {
             </div>
 
             <div className={styles.recentOrders}>
-              <h2>Carros cadastrados recentemente</h2>
+              <h2>Carros cadastrados</h2>
               <table>
                 <thead>
                   <tr>
