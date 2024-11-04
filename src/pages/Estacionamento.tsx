@@ -5,6 +5,7 @@ import axios from 'axios';
 import styles from '../styles/Estacionamento.module.css';
 import { IoIosSearch } from "react-icons/io";
 import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Veiculo {
   id: number;

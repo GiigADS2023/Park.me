@@ -89,32 +89,16 @@
 
 .main .insights .carsParked svg circle {
     fill: none;
-    stroke: #7380ec; 
     stroke-width: 14;
     stroke-linecap: round;
     transform: translate(5px, 5px);
-    stroke-dashoffset: -30;
-    stroke-dasharray: 200;
 }
 
 .main .insights .totalParking svg circle {
-    fill: none;
-    stroke: #ff7782; 
+    fill: none; 
     stroke-width: 14;
     stroke-linecap: round;
     transform: translate(5px, 5px);
-    stroke-dashoffset: 20;
-    stroke-dasharray: 80;
-}
-
-.main .insights .carsParked svg circle {
-    stroke-dashoffset: 20;
-    stroke-dasharray: 250;
-}
-
-.main .insights .totalParking svg circle {
-    stroke-dashoffset: 20;
-    stroke-dasharray: 250;
 }
 
 .main .insights .progress .number {

@@ -8,7 +8,8 @@ export default function Home() {
   const [carsParked, setCarsParked] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]);
-  const [highestEarnings, setHighestEarnings] = useState(0); 
+  const [highestEarnings, setHighestEarnings] = useState(0);
+  const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]);
 
   useEffect(() => {
     if (date) {
@@ -19,20 +20,34 @@ export default function Home() {
   const fetchAnalysis = async () => {
     try {
       const response = await axios.get('/api/analises', { params: { date } });
-      const { estacionados, totalGanho, carrosRecentes, maiorGanho } = response.data; 
+      const { estacionados, totalGanho, carrosRecentes } = response.data;
 
       setCarsParked(estacionados);
       setTotalEarnings(totalGanho);
       setRecentCars(carrosRecentes);
-      setHighestEarnings(maiorGanho); 
+
+      setGanhosPorDia(prevGanhos => {
+        const novosGanhos = [...prevGanhos, totalGanho];
+        const maiorGanho = Math.max(...novosGanhos);
+        setHighestEarnings(maiorGanho);
+        return novosGanhos;
+      });
+
     } catch (error) {
       console.error("Erro ao buscar análises:", error);
+      setHighestEarnings(0);
     }
   };
 
   const parkingPercentage = (carsParked / 50) * 100;
-
   const earningsPercentage = highestEarnings > 0 ? (totalEarnings / highestEarnings) * 100 : 0;
+
+  const circleRadius = 36; // Raio do círculo
+  const circleCircumference = 2 * Math.PI * circleRadius; // Calcula a circunferência do círculo
+
+  // Calcula o "deslocamento" com base na porcentagem
+  const parkingStrokeDashoffset = circleCircumference - (circleCircumference * parkingPercentage) / 100;
+  const earningsStrokeDashoffset = circleCircumference - (circleCircumference * earningsPercentage) / 100;
 
   return (
     <BaseLayout>
@@ -62,10 +77,12 @@ export default function Home() {
                   </div>
                   <div className={styles.progress}>
                     <svg>
-                      <circle cx={38} cy={38} r={36}></circle>
+                      <circle cx={38} cy={38} r={circleRadius} stroke="#7380ec" strokeWidth="14" fill="none" 
+                              strokeDasharray={circleCircumference} 
+                              strokeDashoffset={parkingPercentage > 0 ? parkingStrokeDashoffset : circleCircumference}></circle>
                     </svg>
                     <div className={styles.number}>
-                      <p>{parkingPercentage.toFixed(2)}%</p> {/* Porcentagem de lotação */}
+                      <p>{parkingPercentage.toFixed(2)}%</p>
                     </div>
                   </div>
                 </div>
@@ -79,10 +96,12 @@ export default function Home() {
                   </div>
                   <div className={styles.progress}>
                     <svg>
-                      <circle cx={38} cy={38} r={36}></circle>
+                      <circle cx={38} cy={38} r={circleRadius} stroke="#ff7782" strokeWidth="14" fill="none" 
+                              strokeDasharray={circleCircumference} 
+                              strokeDashoffset={earningsPercentage > 0 ? earningsStrokeDashoffset : circleCircumference}></circle>
                     </svg>
                     <div className={styles.number}>
-                      <p>{earningsPercentage.toFixed(2)}%</p> {/* Porcentagem de ganho */}
+                      <p>{earningsPercentage.toFixed(2)}%</p>
                     </div>
                   </div>
                 </div>
