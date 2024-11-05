@@ -42,10 +42,9 @@ export default function Home() {
   const parkingPercentage = (carsParked / 50) * 100;
   const earningsPercentage = highestEarnings > 0 ? (totalEarnings / highestEarnings) * 100 : 0;
 
-  const circleRadius = 36; // Raio do círculo
-  const circleCircumference = 2 * Math.PI * circleRadius; // Calcula a circunferência do círculo
+  const circleRadius = 36;
+  const circleCircumference = 2 * Math.PI * circleRadius;
 
-  // Calcula o "deslocamento" com base na porcentagem
   const parkingStrokeDashoffset = circleCircumference - (circleCircumference * parkingPercentage) / 100;
   const earningsStrokeDashoffset = circleCircumference - (circleCircumference * earningsPercentage) / 100;
 
@@ -77,7 +76,10 @@ export default function Home() {
                   </div>
                   <div className={styles.progress}>
                     <svg>
-                      <circle cx={38} cy={38} r={circleRadius} stroke="#7380ec" strokeWidth="14" fill="none" 
+                      {/* Círculo cinza de fundo */}
+                      <circle cx={38} cy={38} r={circleRadius} stroke="#e0e0e0" strokeWidth="14" fill="none" />
+                      {/* Círculo colorido com a porcentagem de progresso */}
+                      <circle cx={38} cy={38} r={circleRadius} stroke="#7380ec" strokeWidth="14" fill="none"
                               strokeDasharray={circleCircumference} 
                               strokeDashoffset={parkingPercentage > 0 ? parkingStrokeDashoffset : circleCircumference}></circle>
                     </svg>
@@ -87,6 +89,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+
               <div className={styles.totalParking}>
                 <span className="material-icons">analytics</span>
                 <div className={styles.middle}>
@@ -96,7 +99,10 @@ export default function Home() {
                   </div>
                   <div className={styles.progress}>
                     <svg>
-                      <circle cx={38} cy={38} r={circleRadius} stroke="#ff7782" strokeWidth="14" fill="none" 
+                      {/* Círculo cinza de fundo */}
+                      <circle cx={38} cy={38} r={circleRadius} stroke="#e0e0e0" strokeWidth="14" fill="none" />
+                      {/* Círculo colorido com a porcentagem de progresso */}
+                      <circle cx={38} cy={38} r={circleRadius} stroke="#ff7782" strokeWidth="14" fill="none"
                               strokeDasharray={circleCircumference} 
                               strokeDashoffset={earningsPercentage > 0 ? earningsStrokeDashoffset : circleCircumference}></circle>
                     </svg>
