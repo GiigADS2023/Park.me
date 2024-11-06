@@ -1,64 +1,98 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../prisma'; 
+import prisma from '../../../prisma';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { date } = req.query;
+  const { startDate, endDate } = req.query;
 
-  if (!date) {
-    return res.status(400).json({ message: "Data não fornecida" });
+  if (!startDate && endDate) {
+    // Apenas data final fornecida - retorna erro
+    return res.status(400).json({ message: "Por favor, insira uma data inicial ou ambas as datas." });
   }
 
-  const startDate = new Date(date as string);
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + 1);
+  const start = startDate ? new Date(startDate as string) : null;
+  const end = endDate ? new Date(endDate as string) : null;
+
+  // Ajustar end date para o dia seguinte caso esteja presente
+  if (end) end.setDate(end.getDate() + 1);
 
   try {
-    // Carros estacionados
-    const estacionados = await prisma.historico.count({
-      where: {
-        entrada: {
-          gte: startDate,
-          lt: endDate,
-        },
-      },
-    });
+    let estacionados = 0;
+    let totalGanho = 0;
+    let carrosRecentes = [];
 
-    // Total de ganho
-    const totalGanho = await prisma.historico.aggregate({
-      where: {
-        entrada: {
-          gte: startDate,
-          lt: endDate,
+    if (start && !end) {
+      // Caso apenas a data inicial seja informada
+      estacionados = await prisma.historico.count({
+        where: {
+          entrada: {
+            gte: start,
+            lt: new Date(start.getTime() + 24 * 60 * 60 * 1000), // Até o final do dia
+          },
         },
-        saida: {
-          not: null,
-        },
-      },
-      _sum: {
-        preco: true,
-      },
-    });
+      });
 
-    // Carros cadastrados recentemente
-    const carrosRecentes = await prisma.veiculos.findMany({
-      where: {
-        created_at: {
-          gte: startDate,
-          lt: endDate,
+      const ganhoResult = await prisma.historico.aggregate({
+        where: {
+          entrada: {
+            gte: start,
+            lt: new Date(start.getTime() + 24 * 60 * 60 * 1000),
+          },
+          saida: {
+            not: null,
+          },
         },
-      },
-      select: {
-        placa: true,
-        modelo: true,
-        cor: true,
-        proprietario: true,
-      },
-    });
+        _sum: {
+          preco: true,
+        },
+      });
+      totalGanho = ganhoResult._sum.preco || 0;
+
+      carrosRecentes = await prisma.veiculos.findMany({
+        where: {
+          created_at: {
+            gte: start,
+            lt: new Date(start.getTime() + 24 * 60 * 60 * 1000),
+          },
+        },
+        select: {
+          placa: true,
+          modelo: true,
+          cor: true,
+          proprietario: true,
+        },
+      });
+    } else if (start && end) {
+      // Caso data inicial e final sejam informadas
+      estacionados = await prisma.historico.count({
+        where: {
+          entrada: {
+            gte: start,
+            lt: end,
+          },
+        },
+      });
+
+      const ganhoResult = await prisma.historico.aggregate({
+        where: {
+          entrada: {
+            gte: start,
+            lt: end,
+          },
+          saida: {
+            not: null,
+          },
+        },
+        _sum: {
+          preco: true,
+        },
+      });
+      totalGanho = ganhoResult._sum.preco || 0;
+    }
 
     res.status(200).json({
       estacionados,
-      totalGanho: totalGanho._sum.preco || 0,
-      carrosRecentes,
+      totalGanho,
+      carrosRecentes: start && !end ? carrosRecentes : [],
     });
   } catch (error) {
     console.error(error);

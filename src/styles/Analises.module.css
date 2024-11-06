@@ -6,7 +6,7 @@
 
 .body {
     width: 90vw;
-    height: 100vh;
+    height: 90vh;
 }
 
 .main {
@@ -19,6 +19,7 @@
     border-radius: 0.4rem;
     margin-top: 1rem;
     padding: 0.5rem 1.6rem;
+    margin-right: 1rem;  
 }
 
 .main .date input[type='date'] {

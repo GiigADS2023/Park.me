@@ -2,9 +2,12 @@ import BaseLayout from "@/components/BaseLayout";
 import styles from "../styles/Analises.module.css";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Home() {
-  const [date, setDate] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [carsParked, setCarsParked] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]);
@@ -12,16 +15,21 @@ export default function Home() {
   const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]);
 
   useEffect(() => {
-    if (date) {
+    if (startDate || endDate) {
       fetchAnalysis();
     }
-  }, [date]);
+  }, [startDate, endDate]);
 
   const fetchAnalysis = async () => {
-    try {
-      const response = await axios.get('/api/analises', { params: { date } });
-      const { estacionados, totalGanho, carrosRecentes } = response.data;
+    if (!startDate && endDate) {
+      toast.warning("Por favor, insira uma data inicial ou ambas as datas.");
+      return;
+    }
 
+    try {
+      const response = await axios.get('/api/analises', { params: { startDate, endDate } });
+      const { estacionados, totalGanho, carrosRecentes } = response.data;
+      
       setCarsParked(estacionados);
       setTotalEarnings(totalGanho);
       setRecentCars(carrosRecentes);
@@ -32,6 +40,17 @@ export default function Home() {
         setHighestEarnings(maiorGanho);
         return novosGanhos;
       });
+
+      if (!endDate) {
+        // Caso apenas a data inicial seja informada, calcula a porcentagem
+        const parkingPercentage = (estacionados / 50) * 100;
+        const earningsPercentage = highestEarnings > 0 ? (totalGanho / highestEarnings) * 100 : 0;
+
+        setHighestEarnings(Math.max(totalGanho, highestEarnings));
+      } else {
+        // Caso data inicial e final sejam informadas, esconda carros cadastrados
+        setRecentCars([]);
+      }
 
     } catch (error) {
       console.error("Erro ao buscar análises:", error);
@@ -50,6 +69,7 @@ export default function Home() {
 
   return (
     <BaseLayout>
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className={styles.div}>
         <div className={styles.body}>
           <main className={styles.main}>
@@ -57,13 +77,17 @@ export default function Home() {
             <div className={styles.date}>
               <input
                 type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    fetchAnalysis();
-                  }
-                }}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                placeholder="Data Inicial"
+              />
+            </div>
+            <div className={styles.date}>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                placeholder="Data Final"
               />
             </div>
             <div className={styles.insights}>
@@ -74,6 +98,7 @@ export default function Home() {
                     <h3>Carros estacionados</h3>
                     <h1>{carsParked}</h1>
                   </div>
+                  {startDate && !endDate && (
                   <div className={styles.progress}>
                     <svg>
                       {/* Círculo cinza de fundo */}
@@ -84,9 +109,10 @@ export default function Home() {
                               strokeDashoffset={parkingPercentage > 0 ? parkingStrokeDashoffset : circleCircumference}></circle>
                     </svg>
                     <div className={styles.number}>
-                      <p>{parkingPercentage.toFixed(2)}%</p>
+                    <p>{((carsParked / 50) * 100).toFixed(2)}%</p>
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
 
@@ -97,6 +123,7 @@ export default function Home() {
                     <h3>Total de ganho</h3>
                     <h1>R${Number(totalEarnings).toFixed(2)}</h1>
                   </div>
+                  {startDate && !endDate && (
                   <div className={styles.progress}>
                     <svg>
                       {/* Círculo cinza de fundo */}
@@ -107,13 +134,15 @@ export default function Home() {
                               strokeDashoffset={earningsPercentage > 0 ? earningsStrokeDashoffset : circleCircumference}></circle>
                     </svg>
                     <div className={styles.number}>
-                      <p>{earningsPercentage.toFixed(2)}%</p>
+                    <p>{(totalEarnings / (highestEarnings || 1) * 100).toFixed(2)}%</p>
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
             </div>
 
+            {startDate && !endDate && (
             <div className={styles.recentOrders}>
               <h2>Carros cadastrados</h2>
               <table>
@@ -147,6 +176,7 @@ export default function Home() {
               
               {recentCars.length > 5 && <a href="#">Mostrar Todos</a>}
             </div>
+            )}
           </main>
         </div>
       </div>
