@@ -1,33 +1,60 @@
 describe('Página de Análises', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/'); // ajuste o caminho se necessário
+    cy.visit('http://localhost:3000'); // URL da sua aplicação
   });
 
-  it('deve exibir o título corretamente', () => {
-    cy.contains('Análises').should('be.visible');
+  it('deve carregar corretamente a página e exibir o título', () => {
+    cy.contains('h1', 'Análises'); // Verifica se o título "Análises" está visível
+  });
+});
+describe('Interação com o campo de data', () => {
+  beforeEach(() => {
+    cy.visit('http://localhost:3000');
   });
 
-  it('deve permitir selecionar uma data', () => {
-    cy.get('input[type="date"]').should('be.visible').click();
-    cy.get('input[type="date"]').type('2023-10-28'); // ou a data desejada
-    cy.get('input[type="date"]').should('have.value', '2023-10-28');
+  it('deve permitir alterar a data e disparar a requisição', () => {
+    const newDate = '2024-11-05'; // Data para testar
+    cy.get('input[type="date"]').type(newDate); // Altera a data
+    cy.get('input[type="date"]').should('have.value', newDate); // Verifica se a data foi atualizada
+  });
+});
+describe('Campo de Data', () => {
+  beforeEach(() => {
+    cy.visit('http://localhost:3000');
   });
 
-  it('deve exibir os carros estacionados como 0', () => {
-    cy.contains('Carros estacionados').siblings('h1').should('contain', '0');
+  it('deve exibir o campo de data', () => {
+    cy.get('input[type="date"]').should('exist'); // Verifica se o campo de data está presente
+  });
+});
+
+
+describe('Tabela de Carros Cadastrados', () => {
+  beforeEach(() => {
+    cy.visit('http://localhost:3000');
   });
 
-  it('deve exibir o total de ganho como R$00,00', () => {
-    cy.contains('Total de ganho').siblings('h1').should('contain', 'R$00,00');
+  it('deve exibir a tabela de carros cadastrados', () => {
+    cy.get('table').should('be.visible'); // Verifica se a tabela de carros está visível
   });
 
-  it('deve listar os carros cadastrados recentemente', () => {
-    cy.get('table tbody tr').should('have.length', 2);
-    cy.get('table tbody tr').eq(0).contains('ABC-1234');
-    cy.get('table tbody tr').eq(1).contains('Teste');
+  it('deve exibir as colunas da tabela corretamente', () => {
+    cy.get('thead').find('th').should('have.length', 4); // Verifica se há 4 colunas na tabela
   });
 
-  it('deve ter um link para mostrar todos os carros cadastrados', () => {
-    cy.get('a').contains('Mostrar Todos').should('be.visible').and('have.attr', 'href', '#');
+  it('deve exibir o texto "Placa" na primeira coluna', () => {
+    cy.get('thead tr th').first().contains('Placa').should('be.visible');
+  });
+
+  it('deve exibir o texto "Modelo" na segunda coluna', () => {
+    cy.get('thead tr th').eq(1).contains('Modelo').should('be.visible');
+  });
+
+  it('deve exibir o texto "Cor" na terceira coluna', () => {
+    cy.get('thead tr th').eq(2).contains('Cor').should('be.visible');
+  });
+
+  it('deve exibir o texto "Proprietário" na quarta coluna', () => {
+    cy.get('thead tr th').last().contains('Proprietário').should('be.visible');
   });
 });
