@@ -2,24 +2,43 @@ import BaseLayout from "@/components/BaseLayout";
 import styles from "../styles/Analises.module.css";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Home() {
-  const [date, setDate] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [carsParked, setCarsParked] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]);
   const [highestEarnings, setHighestEarnings] = useState(0);
   const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
 
   useEffect(() => {
-    if (date) {
+    if (!startDate && !endDate) {
+      setCarsParked(0);
+      setTotalEarnings(0);
+      setRecentCars([]);
+      setGanhosPorDia([]);
+      setHighestEarnings(0);
+    } else {
       fetchAnalysis();
     }
-  }, [date]);
+  }, [startDate, endDate]);
 
   const fetchAnalysis = async () => {
+    if (!startDate && endDate) {
+      toast.warning("Por favor, insira uma data inicial ou ambas as datas.");
+      setCarsParked(0);
+      setTotalEarnings(0);
+      return;
+    }
+
+    setIsLoading(true); // Ativa o estado de carregamento
+
     try {
-      const response = await axios.get('/api/analises', { params: { date } });
+      const response = await axios.get('/api/analises', { params: { startDate, endDate } });
       const { estacionados, totalGanho, carrosRecentes } = response.data;
 
       setCarsParked(estacionados);
@@ -33,9 +52,19 @@ export default function Home() {
         return novosGanhos;
       });
 
+      if (!endDate) {
+        const parkingPercentage = (estacionados / 50) * 100;
+        const earningsPercentage = highestEarnings > 0 ? (totalGanho / highestEarnings) * 100 : 0;
+
+        setHighestEarnings(Math.max(totalGanho, highestEarnings));
+      } else {
+        setRecentCars([]);
+      }
     } catch (error) {
       console.error("Erro ao buscar análises:", error);
       setHighestEarnings(0);
+    } finally {
+      setIsLoading(false); // Desativa o estado de carregamento
     }
   };
 
@@ -50,6 +79,7 @@ export default function Home() {
 
   return (
     <BaseLayout>
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className={styles.div}>
         <div className={styles.body}>
           <main className={styles.main}>
@@ -57,96 +87,75 @@ export default function Home() {
             <div className={styles.date}>
               <input
                 type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    fetchAnalysis();
-                  }
-                }}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                placeholder="Data Inicial"
               />
             </div>
-            <div className={styles.insights}>
-              <div className={styles.carsParked}>
-                <span className="material-icons">directions_car</span>
-                <div className={styles.middle}>
-                  <div className={styles.left}>
-                    <h3>Carros estacionados</h3>
-                    <h1>{carsParked}</h1>
-                  </div>
-                  <div className={styles.progress}>
-                    <svg>
-                      {/* Círculo cinza de fundo */}
-                      <circle cx={38} cy={38} r={circleRadius} stroke="#e0e0e0" strokeWidth="14" fill="none" />
-                      {/* Círculo colorido com a porcentagem de progresso */}
-                      <circle cx={38} cy={38} r={circleRadius} stroke="#7380ec" strokeWidth="14" fill="none"
-                              strokeDasharray={circleCircumference} 
-                              strokeDashoffset={parkingPercentage > 0 ? parkingStrokeDashoffset : circleCircumference}></circle>
-                    </svg>
-                    <div className={styles.number}>
-                      <p>{parkingPercentage.toFixed(2)}%</p>
+            <div className={styles.date}>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                placeholder="Data Final"
+              />
+            </div>
+
+            {isLoading ? (
+              // Mostra o ícone de carregamento enquanto os dados estão sendo buscados
+              <div className={styles.loading}>
+                <p>Carregando...</p>
+              </div>
+            ) : (
+              // Exibe os dados carregados
+              <div className={styles.insights}>
+                <div className={styles.carsParked}>
+                  <span className="material-icons">directions_car</span>
+                  <div className={styles.middle}>
+                    <div className={styles.left}>
+                      <h3>Carros estacionados</h3>
+                      <h1>{carsParked}</h1>
                     </div>
+                    {startDate && !endDate && (
+                      <div className={styles.progress}>
+                        <svg>
+                          <circle cx={38} cy={38} r={circleRadius} stroke="#e0e0e0" strokeWidth="14" fill="none" />
+                          <circle cx={38} cy={38} r={circleRadius} stroke="#7380ec" strokeWidth="14" fill="none"
+                                  strokeDasharray={circleCircumference} 
+                                  strokeDashoffset={parkingPercentage > 0 ? parkingStrokeDashoffset : circleCircumference}></circle>
+                        </svg>
+                        <div className={styles.number}>
+                          <p>{((carsParked / 50) * 100).toFixed(2)}%</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.totalParking}>
+                  <span className="material-icons">analytics</span>
+                  <div className={styles.middle}>
+                    <div className={styles.left}>
+                      <h3>Total de ganho</h3>
+                      <h1>R${Number(totalEarnings).toFixed(2)}</h1>
+                    </div>
+                    {startDate && !endDate && (
+                      <div className={styles.progress}>
+                        <svg>
+                          <circle cx={38} cy={38} r={circleRadius} stroke="#e0e0e0" strokeWidth="14" fill="none" />
+                          <circle cx={38} cy={38} r={circleRadius} stroke="#ff7782" strokeWidth="14" fill="none"
+                                  strokeDasharray={circleCircumference} 
+                                  strokeDashoffset={earningsPercentage > 0 ? earningsStrokeDashoffset : circleCircumference}></circle>
+                        </svg>
+                        <div className={styles.number}>
+                          <p>{(totalEarnings / (highestEarnings || 1) * 100).toFixed(2)}%</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-
-              <div className={styles.totalParking}>
-                <span className="material-icons">analytics</span>
-                <div className={styles.middle}>
-                  <div className={styles.left}>
-                    <h3>Total de ganho</h3>
-                    <h1>R${Number(totalEarnings).toFixed(2)}</h1>
-                  </div>
-                  <div className={styles.progress}>
-                    <svg>
-                      {/* Círculo cinza de fundo */}
-                      <circle cx={38} cy={38} r={circleRadius} stroke="#e0e0e0" strokeWidth="14" fill="none" />
-                      {/* Círculo colorido com a porcentagem de progresso */}
-                      <circle cx={38} cy={38} r={circleRadius} stroke="#ff7782" strokeWidth="14" fill="none"
-                              strokeDasharray={circleCircumference} 
-                              strokeDashoffset={earningsPercentage > 0 ? earningsStrokeDashoffset : circleCircumference}></circle>
-                    </svg>
-                    <div className={styles.number}>
-                      <p>{earningsPercentage.toFixed(2)}%</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.recentOrders}>
-              <h2>Carros cadastrados</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Placa</th>
-                    <th>Modelo</th>
-                    <th>Cor</th>
-                    <th>Proprietário</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentCars.length > 0 ? (
-                    recentCars.map((car, index) => (
-                      <tr key={index}>
-                        <td>{car.placa}</td>
-                        <td>{car.modelo}</td>
-                        <td>{car.cor}</td>
-                        <td>{car.proprietario}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} style={{ textAlign: 'center' }}>
-                        Não houve carros cadastrados neste dia.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              
-              {recentCars.length > 5 && <a href="#">Mostrar Todos</a>}
-            </div>
+            )}
           </main>
         </div>
       </div>
