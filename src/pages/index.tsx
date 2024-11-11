@@ -1,3 +1,4 @@
+/* eslint-disable react/react-in-jsx-scope */
 import BaseLayout from "@/components/BaseLayout";
 import styles from "../styles/Analises.module.css";
 import { useState, useEffect } from 'react';

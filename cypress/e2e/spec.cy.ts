@@ -1,60 +1,52 @@
 describe('Página de Análises', () => {
+
   beforeEach(() => {
-    cy.visit('http://localhost:3000'); // URL da sua aplicação
+    // Antes de cada teste, vamos carregar a página
+    cy.visit('http://localhost:3000'); // Certifique-se de que a URL está correta para seu ambiente de testes
   });
 
-  it('deve carregar corretamente a página e exibir o título', () => {
-    cy.contains('h1', 'Análises'); // Verifica se o título "Análises" está visível
-  });
-});
-describe('Interação com o campo de data', () => {
-  beforeEach(() => {
-    cy.visit('http://localhost:3000');
+  it('Deve carregar a página sem erros', () => {
+    // Verifica se a página carrega corretamente
+    cy.contains('Análises').should('be.visible');
   });
 
-  it('deve permitir alterar a data e disparar a requisição', () => {
-    const newDate = '2024-11-05'; // Data para testar
-    cy.get('input[type="date"]').type(newDate); // Altera a data
-    cy.get('input[type="date"]').should('have.value', newDate); // Verifica se a data foi atualizada
-  });
-});
-describe('Campo de Data', () => {
-  beforeEach(() => {
-    cy.visit('http://localhost:3000');
+  it('Deve exibir os campos de data corretamente', () => {
+    // Verifica se os campos de data estão visíveis
+    cy.get('input[type="date"]').should('have.length', 2); // Espera dois campos de data
   });
 
-  it('deve exibir o campo de data', () => {
-    cy.get('input[type="date"]').should('exist'); // Verifica se o campo de data está presente
-  });
-});
+  it('Deve exibir dados ao preencher as datas corretamente', () => {
+    // Esperar um pouco para garantir que os campos de data estejam disponíveis
+    cy.wait(1000); // Espera de 1 segundo (ajuste conforme necessário)
 
+    // Preencher datas válidas
+    const startDate = '2023-10-01';
+    const endDate = '2023-10-31';
 
-describe('Tabela de Carros Cadastrados', () => {
-  beforeEach(() => {
-    cy.visit('http://localhost:3000');
-  });
+    // Preenche os campos de data usando os placeholders
+    cy.get('input[placeholder="Data Inicial"]').type(startDate); // Campo de data inicial
+    cy.get('input[placeholder="Data Final"]').type(endDate);   // Campo de data final
 
-  it('deve exibir a tabela de carros cadastrados', () => {
-    cy.get('table').should('be.visible'); // Verifica se a tabela de carros está visível
-  });
+    // Dispara a requisição ao desfoque (blur) no campo de data final
+    cy.get('input[placeholder="Data Final"]').blur();
 
-  it('deve exibir as colunas da tabela corretamente', () => {
-    cy.get('thead').find('th').should('have.length', 4); // Verifica se há 4 colunas na tabela
-  });
-
-  it('deve exibir o texto "Placa" na primeira coluna', () => {
-    cy.get('thead tr th').first().contains('Placa').should('be.visible');
+    // Verifica se os dados de carros estacionados e total de ganhos são exibidos corretamente
+    cy.get('.carsParked h1').should('not.be.empty'); // Verifica se o número de carros estacionados aparece
+    cy.get('.totalParking h1').should('not.be.empty'); // Verifica se o total de ganhos aparece
   });
 
-  it('deve exibir o texto "Modelo" na segunda coluna', () => {
-    cy.get('thead tr th').eq(1).contains('Modelo').should('be.visible');
-  });
+  it('Deve mostrar mensagem de erro se a data final for preenchida sem a data inicial', () => {
+    // Esperar um pouco para garantir que os campos de data estejam disponíveis
+    cy.wait(1000); // Espera de 1 segundo (ajuste conforme necessário)
 
-  it('deve exibir o texto "Cor" na terceira coluna', () => {
-    cy.get('thead tr th').eq(2).contains('Cor').should('be.visible');
-  });
+    // Preencher a data final sem a data inicial
+    const endDate = '2023-10-31';
 
-  it('deve exibir o texto "Proprietário" na quarta coluna', () => {
-    cy.get('thead tr th').last().contains('Proprietário').should('be.visible');
+    // Preenche o campo da data final
+    cy.get('input[placeholder="Data Final"]').type(endDate);
+    cy.get('input[placeholder="Data Final"]').blur(); // Ou qualquer outro evento para disparar a requisição
+
+    // Verifica se o toast de erro aparece
+    cy.get('.Toastify__toast').should('contain.text', 'Por favor, insira uma data inicial ou ambas as datas.');
   });
 });
