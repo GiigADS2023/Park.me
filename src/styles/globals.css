@@ -14,11 +14,13 @@ body {
 .layout {
   display: flex;
   height: 100vh;
-  gap: 2rem;
+  gap: 7.5rem;
 }
 
 .sidebar__wrapper {
-  position: relative;
+  position: fixed;
+  height: 100%;
+  z-index: 1000; 
 }
 
 .sidebar {

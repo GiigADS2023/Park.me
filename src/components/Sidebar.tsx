@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useContext, useState } from "react";
+import { useRouter } from "next/router";
+import { useContext } from "react";
 import { FaChartBar } from "react-icons/fa";
 import { FaCar } from "react-icons/fa";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
@@ -27,11 +28,7 @@ const sidebarItems = [
 
 export default function Sidebar() {
   const { isCollapsedSidebar, toogleSidebarCollapseHandler } = useContext(SidebarContext);
-  const [activeLink, setActiveLink] = useState("");
-
-  const handleLinkClick = (href: string) => {
-    setActiveLink(href);
-  };
+  const router = useRouter(); // Utiliza useRouter para obter a rota atual
 
   return (
     <div className="sidebar__wrapper">
@@ -60,12 +57,11 @@ export default function Sidebar() {
             <li className="sidebar__item" key={name}>
               <Link 
                 href={href} 
-                className={`sidebar__link ${activeLink === href ? 'active' : ''}`} 
-                onClick={() => handleLinkClick(href)} 
+                className={`sidebar__link ${router.pathname === href ? 'active' : ''}`} 
                 scroll={false} 
               >
                 <span className="sidebar_icon">
-                  <Icon className={activeLink === href ? 'active-icon' : ''} />
+                  <Icon className={router.pathname === href ? 'active-icon' : ''} />
                 </span>
                 <span className="sidebar__name">{name}</span>
               </Link>

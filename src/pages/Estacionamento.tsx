@@ -60,6 +60,12 @@ export default function Estacionamento() {
   const [initializeDateTime, setInitializeDateTime] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
+  // Obter a data e hora atuais formatadas
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    return now.toISOString().slice(0, 16);
+  };
+
   // Fetch veiculos para popular o select
   useEffect(() => {
     const fetchVeiculos = async () => {
@@ -100,6 +106,14 @@ export default function Estacionamento() {
   const handleSave = async () => {
     if (!selectedVeiculoId || !entrada) {
       toast.warning("Por favor, selecione um veículo e informe a entrada.");
+      return;
+    }
+    
+    // Verificar se a entrada não é anterior ao dia atual
+    const entradaDate = new Date(entrada);
+    const now = new Date();
+    if (entradaDate < now) {
+      toast.warning("A entrada não pode ser anterior à data e hora atuais.");
       return;
     }
   
@@ -331,20 +345,20 @@ export default function Estacionamento() {
 
         {/* Modal de novo registro */}
         {isModalOpen && (
-          <div
-            className={`${styles.modalContainer} ${styles.active}`.trim()}
-            onClick={closeModal}
-          >
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-              <h2>Registrar Entrada</h2>
-              <select
-            value={selectedVeiculoId || ""}
-            onChange={(e) => {
-              const veiculoId = Number(e.target.value);
-              setSelectedVeiculoId(veiculoId);
-              console.log("Selected Vehicle ID after change:", veiculoId); 
-            }}
-          >
+            <div
+              className={`${styles.modalContainer} ${styles.active}`.trim()}
+              onClick={closeModal}
+            >
+              <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <h2>Registrar Entrada</h2>
+                <select
+                  value={selectedVeiculoId || ""}
+                  onChange={(e) => {
+                    const veiculoId = Number(e.target.value);
+                    setSelectedVeiculoId(veiculoId);
+                    console.log("Selected Vehicle ID after change:", veiculoId); 
+                  }}
+                >
                 <option value="">Selecione um veículo</option>
                 {getAvailableVeiculos().map((veiculo) => (
                   <option key={veiculo.id} value={veiculo.id}>
@@ -352,15 +366,16 @@ export default function Estacionamento() {
                   </option>
                 ))}
               </select>
-              <input
-                type="datetime-local"
-                value={entrada}
-                onChange={(e) => setEntrada(e.target.value)}
-              />
-              <button className={`${styles.button} ${styles.saveButton}`} onClick={handleSave}>Salvar</button>
+                <input
+                  type="datetime-local"
+                  value={entrada}
+                  min={getCurrentDateTime()} // Define o valor mínimo para o atual
+                  onChange={(e) => setEntrada(e.target.value)}
+                />
+                <button className={`${styles.button} ${styles.saveButton}`} onClick={handleSave}>Salvar</button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </BaseLayout>
   );
