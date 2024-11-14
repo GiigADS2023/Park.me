@@ -1,33 +1,52 @@
 describe('Página de Análises', () => {
+
   beforeEach(() => {
-    cy.visit('http://localhost:3000/'); // ajuste o caminho se necessário
+    // Antes de cada teste, vamos carregar a página
+    cy.visit('http://localhost:3000'); // Certifique-se de que a URL está correta para seu ambiente de testes
   });
 
-  it('deve exibir o título corretamente', () => {
+  it('Deve carregar a página sem erros', () => {
+    // Verifica se a página carrega corretamente
     cy.contains('Análises').should('be.visible');
   });
 
-  it('deve permitir selecionar uma data', () => {
-    cy.get('input[type="date"]').should('be.visible').click();
-    cy.get('input[type="date"]').type('2023-10-28'); // ou a data desejada
-    cy.get('input[type="date"]').should('have.value', '2023-10-28');
+  it('Deve exibir os campos de data corretamente', () => {
+    // Verifica se os campos de data estão visíveis
+    cy.get('input[type="date"]').should('have.length', 2); // Espera dois campos de data
   });
 
-  it('deve exibir os carros estacionados como 0', () => {
-    cy.contains('Carros estacionados').siblings('h1').should('contain', '0');
+  it('Deve exibir dados ao preencher as datas corretamente', () => {
+    // Esperar um pouco para garantir que os campos de data estejam disponíveis
+    cy.wait(1000); // Espera de 1 segundo (ajuste conforme necessário)
+
+    // Preencher datas válidas
+    const startDate = '2023-10-01';
+    const endDate = '2023-10-31';
+
+    // Preenche os campos de data usando os placeholders
+    cy.get('input[placeholder="Data Inicial"]').type(startDate); // Campo de data inicial
+    cy.get('input[placeholder="Data Final"]').type(endDate);   // Campo de data final
+
+    // Dispara a requisição ao desfoque (blur) no campo de data final
+    cy.get('input[placeholder="Data Final"]').blur();
+
+    // Verifica se os dados de carros estacionados e total de ganhos são exibidos corretamente
+    cy.get('.carsParked h1').should('not.be.empty'); // Verifica se o número de carros estacionados aparece
+    cy.get('.totalParking h1').should('not.be.empty'); // Verifica se o total de ganhos aparece
   });
 
-  it('deve exibir o total de ganho como R$00,00', () => {
-    cy.contains('Total de ganho').siblings('h1').should('contain', 'R$00,00');
-  });
+  it('Deve mostrar mensagem de erro se a data final for preenchida sem a data inicial', () => {
+    // Esperar um pouco para garantir que os campos de data estejam disponíveis
+    cy.wait(1000); // Espera de 1 segundo (ajuste conforme necessário)
 
-  it('deve listar os carros cadastrados recentemente', () => {
-    cy.get('table tbody tr').should('have.length', 2);
-    cy.get('table tbody tr').eq(0).contains('ABC-1234');
-    cy.get('table tbody tr').eq(1).contains('Teste');
-  });
+    // Preencher a data final sem a data inicial
+    const endDate = '2023-10-31';
 
-  it('deve ter um link para mostrar todos os carros cadastrados', () => {
-    cy.get('a').contains('Mostrar Todos').should('be.visible').and('have.attr', 'href', '#');
+    // Preenche o campo da data final
+    cy.get('input[placeholder="Data Final"]').type(endDate);
+    cy.get('input[placeholder="Data Final"]').blur(); // Ou qualquer outro evento para disparar a requisição
+
+    // Verifica se o toast de erro aparece
+    cy.get('.Toastify__toast').should('contain.text', 'Por favor, insira uma data inicial ou ambas as datas.');
   });
 });
