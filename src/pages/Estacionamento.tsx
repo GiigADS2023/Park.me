@@ -6,6 +6,7 @@ import styles from '../styles/Estacionamento.module.css';
 import { IoIosSearch } from "react-icons/io";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import Loading from "@/components/Loading";
 
 interface Veiculo {
   id: number;
@@ -59,6 +60,7 @@ export default function Estacionamento() {
   const [isInitializeMode, setIsInitializeMode] = useState(false);
   const [initializeDateTime, setInitializeDateTime] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Obter a data e hora atuais formatadas
   const getCurrentDateTime = () => {
@@ -66,28 +68,32 @@ export default function Estacionamento() {
     return now.toISOString().slice(0, 16);
   };
 
-  // Fetch veiculos para popular o select
   useEffect(() => {
     const fetchVeiculos = async () => {
+      setIsLoading(true);  // Começa o carregamento
       try {
         const response = await axios.get('/api/veiculos');
         setVeiculos(response.data);
       } catch (error) {
         console.error('Erro ao buscar veículos:', error);
+      } finally {
+        setIsLoading(false);  // Fim do carregamento
       }
     };
     fetchVeiculos();
   }, []);
 
-  // Fetch histórico inicial
   useEffect(() => {
     const fetchHistoricos = async () => {
+      setIsLoading(true); 
       try {
         const response = await axios.get('/api/historico');
         setHistoricos(response.data);
         setFilteredHistoricos(response.data);
       } catch (error) {
         console.error('Erro ao buscar histórico:', error);
+      } finally {
+        setIsLoading(false);  
       }
     };
     fetchHistoricos();
@@ -244,104 +250,110 @@ export default function Estacionamento() {
       <ToastContainer position="top-right" autoClose={3000} />
       <div className={styles.div}>
         <div className={styles.body}>
-          <div className={styles.searchContainer}>
-            <div className={styles.searchWrapper}>
-              <input
-                type="text"
-                placeholder="Pesquisar por placa..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-              <IoIosSearch className={styles.searchIcon} />
-            </div>
-          </div>
-          <div className={styles.mainContainer}>
-            {filteredHistoricos.map((historico) => (
-              <Card key={historico.id} onClick={() => handleHistoricoClick(historico)}>
-                <div className={styles.identifierContainer}>
-                  <h2>{historico.veiculo.placa}</h2>
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <div>
+              <div className={styles.searchContainer}>
+                <div className={styles.searchWrapper}>
+                  <input
+                    type="text"
+                    placeholder="Pesquisar por placa..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                  />
+                  <IoIosSearch className={styles.searchIcon} />
                 </div>
-                <div className={styles.vehicleContainer}>
-                  <span>Veículo</span>
-                  <h2>{historico.veiculo.modelo}</h2>
-                </div>
-                <div className={styles.timesContainer}>
-                  <span className={styles.start}>
-                    <PiClockCountdownThin aria-label="Start time" />
-                    {new Date(historico.entrada).toLocaleString()}
-                  </span>
-                  <span className={styles.end}>
-                    <PiClockCountdownThin aria-label="End time" />
-                    {historico.saida ? new Date(historico.saida).toLocaleString() : '--/--/---- - --:--'}
-                  </span>
-                </div>
-              </Card>
-            ))}
+              </div>
+              <div className={styles.mainContainer}>
+                {filteredHistoricos.map((historico) => (
+                <Card key={historico.id} onClick={() => handleHistoricoClick(historico)}>
+                  <div className={styles.identifierContainer}>
+                    <h2>{historico.veiculo.placa}</h2>
+                  </div>
+                  <div className={styles.vehicleContainer}>
+                    <span>Veículo</span>
+                    <h2>{historico.veiculo.modelo}</h2>
+                  </div>
+                  <div className={styles.timesContainer}>
+                    <span className={styles.start}>
+                      <PiClockCountdownThin aria-label="Start time" />
+                      {new Date(historico.entrada).toLocaleString()}
+                    </span>
+                    <span className={styles.end}>
+                      <PiClockCountdownThin aria-label="End time" />
+                      {historico.saida ? new Date(historico.saida).toLocaleString() : '--/--/---- - --:--'}
+                    </span>
+                  </div>
+                </Card>
+                ))}
 
-            {/* Botão para abrir o modal de entrada de veículos */}
-            <Card className={styles.addCard} onClick={() => setIsModalOpen(true)}>
-              +
-            </Card>
-          </div>
-
-          {/* Painel de detalhes do histórico */}
-          {selectedHistorico && (
-          <div
-            className={`${styles.modalContainer} ${styles.active}`.trim()}
-            onClick={() => setSelectedHistorico(null)}
-          >
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-              <h2 className={styles.modalTitle}>Histórico</h2>
-
-              <div className={styles.infoBox}>
-                <h3>{new Date(selectedHistorico.entrada).toLocaleString()}</h3>
-                <h3>{selectedHistorico.veiculo.placa}</h3>
-                <h3>{selectedHistorico.veiculo.modelo}</h3>
-                <h3>Preço: R${selectedHistorico.preco !== undefined && selectedHistorico.preco !== null ? Number(selectedHistorico.preco).toFixed(2) : '0.00'}</h3>
+                {/* Botão para abrir o modal de entrada de veículos */}
+                <Card className={styles.addCard} onClick={() => setIsModalOpen(true)}>
+                  +
+                </Card>
               </div>
 
-              <div className={styles.buttonContainer}>
-                <button className={`${styles.button} ${styles.initializeButton}`} onClick={() => {
-                  setIsInitializeMode(true);
-                  setIsFinalizeMode(false);
-                }}>
-                  Inicializar
-                </button>
-                <button className={`${styles.button} ${styles.finalizeButton}`} onClick={() => {
-                  setIsFinalizeMode(true);
-                  setIsInitializeMode(false);
-                }}>
-                  Finalizar
-                </button>
+            {/* Painel de detalhes do histórico */}
+            {selectedHistorico && (
+              <div
+                className={`${styles.modalContainer} ${styles.active}`.trim()}
+                onClick={() => setSelectedHistorico(null)}
+              >
+              <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <h2 className={styles.modalTitle}>Histórico</h2>
+
+                <div className={styles.infoBox}>
+                  <h3>{new Date(selectedHistorico.entrada).toLocaleString()}</h3>
+                  <h3>{selectedHistorico.veiculo.placa}</h3>
+                  <h3>{selectedHistorico.veiculo.modelo}</h3>
+                  <h3>Preço: R${selectedHistorico.preco !== undefined && selectedHistorico.preco !== null ? Number(selectedHistorico.preco).toFixed(2) : '0.00'}</h3>
+                </div>
+
+                <div className={styles.buttonContainer}>
+                  <button className={`${styles.button} ${styles.initializeButton}`} onClick={() => {
+                    setIsInitializeMode(true);
+                    setIsFinalizeMode(false);
+                  }}>
+                    Inicializar
+                  </button>
+                  <button className={`${styles.button} ${styles.finalizeButton}`} onClick={() => {
+                    setIsFinalizeMode(true);
+                    setIsInitializeMode(false);
+                  }}>
+                    Finalizar
+                  </button>
+                </div>
+
+                {isFinalizeMode && (
+                  <div className={styles.inputContainer}>
+                    <h2>Saída:</h2>
+                    <input
+                      type="datetime-local"
+                      value={saida}
+                      onChange={(e) => setSaida(e.target.value)}
+                    />
+                    <button className={`${styles.button} ${styles.saveButton}`} onClick={handleFinalize}>Salvar Saída</button>
+                  </div>
+                )}
+
+                {isInitializeMode && (
+                  <div className={styles.inputContainer}>
+                    <h2>Data/Hora de Início:</h2>
+                    <input
+                      type="datetime-local"
+                      value={initializeDateTime}
+                      onChange={(e) => setInitializeDateTime(e.target.value)}
+                    />
+                    <button className={`${styles.button} ${styles.saveButton}`} onClick={handleInitialize}>Salvar Inicialização</button>
+                  </div>
+                )}
               </div>
-
-              {isFinalizeMode && (
-                <div className={styles.inputContainer}>
-                  <h2>Saída:</h2>
-                  <input
-                    type="datetime-local"
-                    value={saida}
-                    onChange={(e) => setSaida(e.target.value)}
-                  />
-                  <button className={`${styles.button} ${styles.saveButton}`} onClick={handleFinalize}>Salvar Saída</button>
-                </div>
-              )}
-
-              {isInitializeMode && (
-                <div className={styles.inputContainer}>
-                  <h2>Data/Hora de Início:</h2>
-                  <input
-                    type="datetime-local"
-                    value={initializeDateTime}
-                    onChange={(e) => setInitializeDateTime(e.target.value)}
-                  />
-                  <button className={`${styles.button} ${styles.saveButton}`} onClick={handleInitialize}>Salvar Inicialização</button>
-                </div>
-              )}
             </div>
-          </div>
         )}
-        </div>
+            </div>
+          )}
+        </div> 
 
         {/* Modal de novo registro */}
         {isModalOpen && (
@@ -375,7 +387,7 @@ export default function Estacionamento() {
                 <button className={`${styles.button} ${styles.saveButton}`} onClick={handleSave}>Salvar</button>
               </div>
             </div>
-          )}
+        )}
       </div>
     </BaseLayout>
   );

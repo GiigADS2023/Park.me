@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { confirmAlert } from "react-confirm-alert";
 import 'react-confirm-alert/src/react-confirm-alert.css';
+import Loading from "@/components/Loading";
 
 interface Veiculo {
   id: number;
@@ -21,17 +22,21 @@ export default function Veiculos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Veiculo>>({});
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     fetchVeiculos();
   }, []);
 
   const fetchVeiculos = async () => {
+    setIsLoading(true);  
     try {
       const response = await axios.get(`/api/veiculos`);
       setVeiculos(response.data);
     } catch (error) {
       console.error("Erro ao buscar veículos:", error);
+    } finally {
+      setIsLoading(false); 
     }
   };
 
@@ -130,6 +135,9 @@ export default function Veiculos() {
       <ToastContainer position="top-right" autoClose={3000} />
       <div>
         <div className="body">
+          {isLoading ? (
+              <Loading />
+          ) : (
           <div className="container">
             <div className="header">
               <span>Cadastro de Carros</span>
@@ -137,7 +145,6 @@ export default function Veiculos() {
                 Cadastrar
               </button>
             </div>
-
             <div className="divTable">
               <table>
                 <thead>
@@ -260,6 +267,7 @@ export default function Veiculos() {
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
       <style jsx>{`  
