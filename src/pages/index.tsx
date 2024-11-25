@@ -8,14 +8,13 @@ import Loading from "@/components/Loading";
 import styles from "../styles/Analises.module.css";
 
 export default function Home() {
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [carsParked, setCarsParked] = useState(0);
-  const [totalEarnings, setTotalEarnings] = useState(0);
-  const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]);
+  const [startDate, setStartDate] = useState<string>(""); 
+  const [endDate, setEndDate] = useState<string>(""); 
+  const [carsParked, setCarsParked] = useState(0); 
+  const [totalEarnings, setTotalEarnings] = useState(0); 
+  const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]); 
   const [highestEarnings, setHighestEarnings] = useState(0);
-  const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]); // Corrected the destructuring
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false); 
 
   const fetchAnalysis = async () => {
     if (!startDate && endDate) {
