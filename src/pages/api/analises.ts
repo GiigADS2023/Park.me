@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../prisma';
+import { Veiculos } from '@prisma/client';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { startDate, endDate } = req.query;
@@ -18,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     let estacionados = 0;
     let totalGanho = 0;
-    let carrosRecentes = [];
+    let carrosRecentes:Veiculos[] = [];
 
     if (start && !end) {
       // Caso apenas a data inicial seja informada
