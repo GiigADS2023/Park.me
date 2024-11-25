@@ -1,6 +1,6 @@
+import { Veiculos } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../prisma';
-import { Veiculos } from '@prisma/client';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { startDate, endDate } = req.query;
@@ -56,10 +56,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         },
         select: {
+          id: true,       
           placa: true,
           modelo: true,
           cor: true,
           proprietario: true,
+          created_at: true,
         },
       });
     } else if (start && end) {
