@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           preco: true,
         },
       });
-      totalGanho = ganhoResult._sum.preco || 0;
+      totalGanho = (ganhoResult._sum.preco ? ganhoResult._sum.preco.toNumber() : 0);
 
       carrosRecentes = await prisma.veiculos.findMany({
         where: {
@@ -87,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           preco: true,
         },
       });
-      totalGanho = ganhoResult._sum.preco || 0;
+      totalGanho = (ganhoResult._sum.preco ? ganhoResult._sum.preco.toNumber() : 0);
     }
 
     res.status(200).json({
