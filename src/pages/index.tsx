@@ -14,7 +14,7 @@ export default function Home() {
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]);
   const [highestEarnings, setHighestEarnings] = useState(0);
-  const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]);
+  const [setGanhosPorDia] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchAnalysis = async () => {
@@ -49,10 +49,6 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchAnalysis();
-  };
 
   const parkingPercentage = (carsParked / 50) * 100;
   const earningsPercentage = highestEarnings > 0 ? (totalEarnings / highestEarnings) * 100 : 0;
