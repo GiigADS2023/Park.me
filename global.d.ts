@@ -1,10 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 
 declare global {
-  namespace NodeJS {
-    // eslint-disable-next-line no-var
-    var prisma: PrismaClient | undefined;
-  }
+  // Add 'prisma' property to the global object (typeof globalThis)
+  var prisma: PrismaClient | undefined;
 }
 
+// This line ensures that the file is treated as a module and the augmentations are applied.
 export { };
+
