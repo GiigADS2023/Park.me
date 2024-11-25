@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
 import axios from 'axios';
+import { useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import BaseLayout from "@/components/BaseLayout";
-import Loading from "@/components/Loading"; 
+import Loading from "@/components/Loading";
 import styles from "../styles/Analises.module.css";
 
 export default function Home() {
@@ -14,7 +14,7 @@ export default function Home() {
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]);
   const [highestEarnings, setHighestEarnings] = useState(0);
-  const [setGanhosPorDia] = useState<number[]>([]);
+  const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]); // Corrected the destructuring
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchAnalysis = async () => {
@@ -36,10 +36,10 @@ export default function Home() {
       setRecentCars(carrosRecentes);
 
       setGanhosPorDia(prevGanhos => {
-        const novosGanhos = [...prevGanhos, totalGanho];
-        const maiorGanho = Math.max(...novosGanhos);
-        setHighestEarnings(maiorGanho);
-        return novosGanhos;
+        const novosGanhos = [...prevGanhos, totalGanho];  // Add the new ganho to the previous state
+        const maiorGanho = Math.max(...novosGanhos);      // Find the highest ganho
+        setHighestEarnings(maiorGanho);                   // Update highest earnings
+        return novosGanhos;                              // Return the new array to update state
       });
     } catch (error) {
       console.error("Erro ao buscar análises:", error);
