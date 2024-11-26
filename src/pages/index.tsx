@@ -14,6 +14,7 @@ export default function Home() {
   const [totalEarnings, setTotalEarnings] = useState(0); 
   const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]); 
   const [highestEarnings, setHighestEarnings] = useState(0);
+  const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]); // Add the ganhosPorDia state
   const [isLoading, setIsLoading] = useState<boolean>(false); 
 
   const fetchAnalysis = async () => {
@@ -47,7 +48,6 @@ export default function Home() {
       setIsLoading(false);
     }
   };
-
 
   const parkingPercentage = (carsParked / 50) * 100;
   const earningsPercentage = highestEarnings > 0 ? (totalEarnings / highestEarnings) * 100 : 0;
@@ -144,7 +144,21 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-                  
+              
+              {/* Display Daily Earnings */}
+              {ganhosPorDia.length > 0 && (
+                <div className={styles.dailyEarnings}>
+                  <h3>Ganhos por Dia</h3>
+                  <ul>
+                    {ganhosPorDia.map((ganho, index) => (
+                      <li key={index}>
+                        Dia {index + 1}: R${ganho.toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
               {startDate && !endDate && (
               <div className={styles.recentOrders}>
                 <h2>Carros cadastrados</h2>
@@ -176,7 +190,7 @@ export default function Home() {
                     )}
                   </tbody>
                 </table>
-                  
+                
                 {recentCars.length > 5 && <a href="#">Mostrar Todos</a>}
               </div>
               )}
