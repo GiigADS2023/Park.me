@@ -1,11 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 
 declare global {
-  namespace NodeJS {
-    interface Global {
-      prisma: PrismaClient | undefined;
-    }
-  }
+  // Add 'prisma' property to the global object (typeof globalThis)
+  var prisma: PrismaClient | undefined;
 }
 
-export {};
+// This line ensures that the file is treated as a module and the augmentations are applied.
+export { };
+

@@ -1,3 +1,4 @@
+import { Veiculos } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../prisma';
 
@@ -18,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     let estacionados = 0;
     let totalGanho = 0;
-    let carrosRecentes = [];
+    let carrosRecentes:Veiculos[] = [];
 
     if (start && !end) {
       // Apenas a data inicial é informada
@@ -56,9 +57,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           preco: true,
         },
       });
-      
-      totalGanho = ganhoResult._sum.preco || 0;
-    
+      totalGanho = (ganhoResult._sum.preco ? ganhoResult._sum.preco.toNumber() : 0);
+
       carrosRecentes = await prisma.veiculos.findMany({
         where: {
           created_at: {
@@ -67,10 +67,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         },
         select: {
+          id: true,       
           placa: true,
           modelo: true,
           cor: true,
           proprietario: true,
+          created_at: true,
         },
       });
     } else if (start && end) {
@@ -109,8 +111,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           preco: true,
         },
       });
-      totalGanho = ganhoResult._sum.preco || 0;
-    }    
+      totalGanho = (ganhoResult._sum.preco ? ganhoResult._sum.preco.toNumber() : 0);
+    }
 
     res.status(200).json({
       estacionados,

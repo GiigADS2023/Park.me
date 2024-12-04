@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
 import axios from 'axios';
+import { useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import BaseLayout from "@/components/BaseLayout";
-import Loading from "@/components/Loading"; 
+import Loading from "@/components/Loading";
 import styles from "../styles/Analises.module.css";
 
 export default function Home() {
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [carsParked, setCarsParked] = useState(0);
-  const [totalEarnings, setTotalEarnings] = useState(0);
-  const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]);
+  const [startDate, setStartDate] = useState<string>(""); 
+  const [endDate, setEndDate] = useState<string>(""); 
+  const [carsParked, setCarsParked] = useState(0); 
+  const [totalEarnings, setTotalEarnings] = useState(0); 
+  const [recentCars, setRecentCars] = useState<{ placa: string, modelo: string, cor: string, proprietario: string }[]>([]); 
   const [highestEarnings, setHighestEarnings] = useState(0);
-  const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [ganhosPorDia, setGanhosPorDia] = useState<number[]>([]); // Add the ganhosPorDia state
+  const [isLoading, setIsLoading] = useState<boolean>(false); 
 
   const fetchAnalysis = async () => {
     if (!startDate && endDate) {
@@ -36,10 +36,10 @@ export default function Home() {
       setRecentCars(carrosRecentes);
 
       setGanhosPorDia(prevGanhos => {
-        const novosGanhos = [...prevGanhos, totalGanho];
-        const maiorGanho = Math.max(...novosGanhos);
-        setHighestEarnings(maiorGanho);
-        return novosGanhos;
+        const novosGanhos = [...prevGanhos, totalGanho];  // Add the new ganho to the previous state
+        const maiorGanho = Math.max(...novosGanhos);      // Find the highest ganho
+        setHighestEarnings(maiorGanho);                   // Update highest earnings
+        return novosGanhos;                              // Return the new array to update state
       });
     } catch (error) {
       console.error("Erro ao buscar análises:", error);
@@ -47,11 +47,6 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchAnalysis();
   };
 
   const parkingPercentage = (carsParked / 50) * 100;
@@ -149,7 +144,21 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-                  
+              
+              {/* Display Daily Earnings */}
+              {ganhosPorDia.length > 0 && (
+                <div className={styles.dailyEarnings}>
+                  <h3>Ganhos por Dia</h3>
+                  <ul>
+                    {ganhosPorDia.map((ganho, index) => (
+                      <li key={index}>
+                        Dia {index + 1}: R${ganho.toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
               {startDate && !endDate && (
               <div className={styles.recentOrders}>
                 <h2>Carros cadastrados</h2>
@@ -181,7 +190,7 @@ export default function Home() {
                     )}
                   </tbody>
                 </table>
-                  
+                
                 {recentCars.length > 5 && <a href="#">Mostrar Todos</a>}
               </div>
               )}
