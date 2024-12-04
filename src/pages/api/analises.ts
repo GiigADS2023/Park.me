@@ -21,8 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let carrosRecentes = [];
 
     if (start && !end) {
-      // Caso apenas a data inicial seja informada
-      estacionados = await prisma.historico.count({
+      // Apenas a data inicial é informada
+      const entradas = await prisma.historico.count({
         where: {
           entrada: {
             gte: start,
@@ -30,7 +30,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         },
       });
-
+    
+      const saidas = await prisma.historico.count({
+        where: {
+          saida: {
+            gte: start,
+            lt: new Date(start.getTime() + 24 * 60 * 60 * 1000),
+          },
+        },
+      });
+    
+      estacionados = entradas - saidas;
+    
       const ganhoResult = await prisma.historico.aggregate({
         where: {
           entrada: {
@@ -45,8 +56,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           preco: true,
         },
       });
+      
       totalGanho = ganhoResult._sum.preco || 0;
-
+    
       carrosRecentes = await prisma.veiculos.findMany({
         where: {
           created_at: {
@@ -63,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     } else if (start && end) {
       // Caso data inicial e final sejam informadas
-      estacionados = await prisma.historico.count({
+      const entradas = await prisma.historico.count({
         where: {
           entrada: {
             gte: start,
@@ -71,7 +83,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         },
       });
-
+    
+      const saidas = await prisma.historico.count({
+        where: {
+          saida: {
+            gte: start,
+            lt: end,
+          },
+        },
+      });
+    
+      estacionados = entradas - saidas;
+    
       const ganhoResult = await prisma.historico.aggregate({
         where: {
           entrada: {
@@ -87,7 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
       totalGanho = ganhoResult._sum.preco || 0;
-    }
+    }    
 
     res.status(200).json({
       estacionados,
